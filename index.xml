@@ -2,16 +2,16 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Random Musings</title>
-    <link>https://sayembd.github.io/</link>
+    <link>https://sayemahmed.com/</link>
     <description>Recent content on Random Musings</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 19 Oct 2020 02:38:52 +0200</lastBuildDate><atom:link href="https://sayembd.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 19 Oct 2020 02:38:52 +0200</lastBuildDate><atom:link href="https://sayemahmed.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>How to Build Observable Systems - An Introduction to Observability</title>
-      <link>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</link>
+      <link>https://sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/</link>
       <pubDate>Mon, 19 Oct 2020 02:38:52 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</guid>
+      <guid>https://sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/</guid>
       <description>What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.</description>
       <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.</p>
@@ -126,10 +126,10 @@
     
     <item>
       <title>Writing Executable Specifications With Junit5 Mockito and AssertJ</title>
-      <link>https://sayembd.github.io/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</link>
+      <link>https://sayemahmed.com/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</link>
       <pubDate>Sun, 26 Apr 2020 22:40:20 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</guid>
+      <guid>https://sayemahmed.com/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</guid>
       <description>A hands-on tutorial demonstrating a clean way to write unit tests as Executable Specifications using JUnit 5, Mockito, and AssertJ.</description>
       <content:encoded><![CDATA[<p>Executable Specifications are tests that can also serve as design specifications. They enable technical and business teams to get on the same page by enabling the use of a common language (in DDD-world this is also known as <a href="https://martinfowler.com/bliki/UbiquitousLanguage.html">Ubiquitous Language</a>). They function as documentations for the future maintainers of the code. In this article we will see an opinionated way of writing automated tests which could also function as Executable Specifications.</p>
 <p>Let&rsquo;s start with an example. Suppose we are creating an accounting system for a business. The system will allow its users to record incomes and expenses into different accounts. Before users can start recording incomes and expenses, they should be able to add new accounts into the system. Suppose that the specification for the &ldquo;Add New Account&rdquo; use case looks like below -</p>
@@ -784,10 +784,10 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
     
     <item>
       <title>A Brief Overview of the Fork Join Framework in Java</title>
-      <link>https://sayembd.github.io/posts/a-brief-overview-of-the-fork-join-framework-in-java/</link>
+      <link>https://sayemahmed.com/posts/a-brief-overview-of-the-fork-join-framework-in-java/</link>
       <pubDate>Sun, 16 Dec 2018 22:17:05 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/a-brief-overview-of-the-fork-join-framework-in-java/</guid>
+      <guid>https://sayemahmed.com/posts/a-brief-overview-of-the-fork-join-framework-in-java/</guid>
       <description>A tutorial which demonstrates how to use Fork/Join framework in Java for both blocking and non-blocking tasks.</description>
       <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>The Fork/Join framework is a framework to solve a problem using a concurrent divide-and-conquer approach. They were introduced to complement the existing concurrency API. Before their introduction, the existing ExecutorService implementations were the popular choice to run asynchronous tasks, but they work best when the tasks are homogenous and independent. Running dependent tasks and combining their results using those implementations were not easy. With the introduction of the Fork/Join framework, an attempt was made to address this shortcoming. In this post, we will take a brief look at the API and solve a couple of simple problems to understand how they work.</p>
@@ -1032,10 +1032,10 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
     
     <item>
       <title>Java Tips: Creating a Monitoring-friendly ExecutorService</title>
-      <link>https://sayembd.github.io/posts/java-tips-creating-a-monitoring-friendly-executorservice/</link>
+      <link>https://sayemahmed.com/posts/java-tips-creating-a-monitoring-friendly-executorservice/</link>
       <pubDate>Tue, 01 May 2018 03:15:21 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/java-tips-creating-a-monitoring-friendly-executorservice/</guid>
+      <guid>https://sayemahmed.com/posts/java-tips-creating-a-monitoring-friendly-executorservice/</guid>
       <description>A custom ExecutorService implementation in Java, augmented with monitoring capabilities.</description>
       <content:encoded><![CDATA[<p>In this article we will be extending an <a href="https://docs.oracle.com/javase/10/docs/api/java/util/concurrent/ExecutorService.html">ExecutorService</a> implementation with monitoring capabilities. This monitoring capability will help us to measure a number of pool parameters i.e., active threads, work queue size etc. in a live production environment. It will also enable us to measure task execution time, successful tasks count, and failed tasks count.</p>
 <h2 id="monitoring-library">Monitoring Library</h2>
@@ -1224,10 +1224,10 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
     
     <item>
       <title>Jpa Tips: Avoiding the N &#43; 1 Select Problem</title>
-      <link>https://sayembd.github.io/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</link>
+      <link>https://sayemahmed.com/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</link>
       <pubDate>Sun, 22 Apr 2018 18:21:11 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</guid>
+      <guid>https://sayemahmed.com/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</guid>
       <description>An explanation of the N&#43;1 select problem in JPA and Hibernate, along with some solutions.</description>
       <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
 <p>ORM frameworks like JPA simplifies our development process by helping us to avoid lots of boilerplate code during the object &lt;-&gt; relational data mapping. However, they also bring some additional problems to the table, and N + 1 is one of them. In this article we will take a short look at the problem along with some ways to avoid them.</p>
@@ -1299,10 +1299,10 @@ To improve the performance, all I did was -</p>
     
     <item>
       <title>Clean Code From the Trenches Validation</title>
-      <link>https://sayembd.github.io/posts/clean-code-from-the-trenches-validation/</link>
+      <link>https://sayemahmed.com/posts/clean-code-from-the-trenches-validation/</link>
       <pubDate>Fri, 12 May 2017 00:50:12 +0200</pubDate>
       
-      <guid>https://sayembd.github.io/posts/clean-code-from-the-trenches-validation/</guid>
+      <guid>https://sayemahmed.com/posts/clean-code-from-the-trenches-validation/</guid>
       <description>Validation using the Composite Pattern in Java. Also demonstrates clean coding practice.</description>
       <content:encoded><![CDATA[<p>Let&rsquo;s directly start with an example. Consider a simple web service which allows clients to place order to a shop. A very simplified version of the order controller could look something like below -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>

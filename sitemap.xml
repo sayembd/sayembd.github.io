@@ -2,35 +2,35 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sayembd.github.io/about-me/</loc>
+    <loc>https://sayemahmed.com/about-me/</loc>
     <lastmod>2022-08-07T02:51:07+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</loc>
+    <loc>https://sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/</loc>
     <lastmod>2020-10-19T02:38:52+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/</loc>
+    <loc>https://sayemahmed.com/posts/</loc>
     <lastmod>2020-10-19T02:38:52+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/</loc>
+    <loc>https://sayemahmed.com/</loc>
     <lastmod>2020-10-19T02:38:52+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</loc>
+    <loc>https://sayemahmed.com/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</loc>
     <lastmod>2020-04-26T22:40:20+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/a-brief-overview-of-the-fork-join-framework-in-java/</loc>
+    <loc>https://sayemahmed.com/posts/a-brief-overview-of-the-fork-join-framework-in-java/</loc>
     <lastmod>2018-12-16T22:17:05+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/java-tips-creating-a-monitoring-friendly-executorservice/</loc>
+    <loc>https://sayemahmed.com/posts/java-tips-creating-a-monitoring-friendly-executorservice/</loc>
     <lastmod>2018-05-01T03:15:21+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</loc>
+    <loc>https://sayemahmed.com/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</loc>
     <lastmod>2018-04-22T18:21:11+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/posts/clean-code-from-the-trenches-validation/</loc>
+    <loc>https://sayemahmed.com/posts/clean-code-from-the-trenches-validation/</loc>
     <lastmod>2017-05-12T00:50:12+02:00</lastmod>
   </url><url>
-    <loc>https://sayembd.github.io/categories/</loc>
+    <loc>https://sayemahmed.com/categories/</loc>
   </url><url>
-    <loc>https://sayembd.github.io/tags/</loc>
+    <loc>https://sayemahmed.com/tags/</loc>
   </url>
 </urlset>
