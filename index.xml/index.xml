@@ -431,9 +431,7 @@ Let&rsquo;s write another test which will verify this part -</p>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="c1">// Remaining Tests.....
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="o">}</span>
-</span></span></code></pre></div><p>If I now run the tests in my IDEA, this is what I see -</p>
-<p></p>
-<p>When we try to read the test descriptions in this view we can already get a good overview of the Add New Account use case and the way it works.</p>
+</span></span></code></pre></div><p>If I now run the tests in my IDEA, I see all tests are passing, and they all have readable names.</p>
 <p>Right, let&rsquo;s move on the the second scenario of our use case, which is a validation rule  -</p>
 <blockquote>
 <p>Given account does not exist
@@ -562,9 +560,8 @@ Then add new account fails</p>
 <li>We moved related setup code and fields/constants into this inner class.</li>
 <li>We have removed the &ldquo;Given account does not exist&rdquo; part from our new test. This is because the @DisplayName on the outermost test class already includes this, hence no point including it here again.</li>
 </ol>
-<p>This is how the tests now look like when I run them in my IntelliJ IDEA -</p>
-<p></p>
-<p>As we can see from the screenshot, our test labels are also grouped and indented nicely following the structure that we created in our test code. Let&rsquo;s modify our service now to make the failing test pass -</p>
+<p>When we run the tests now the <code>When user adds a new account with negative initial balance Then add new account fails</code> test fails.</p>
+<p>Let&rsquo;s modify our service now to make the failing test pass -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">addNewAccount</span><span class="o">(</span><span class="n">AddNewAccountCommand</span> <span class="n">command</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">BigDecimal</span> <span class="n">initialBalance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BigDecimal</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">getInitialBalance</span><span class="o">());</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">initialBalance</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
