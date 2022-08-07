@@ -16,5 +16,14 @@
 What is Observability? Observability is a term or a concept that has its root in Physics, mainly in Control Theory.</description>
     </item>
     
+    <item>
+      <title>Writing Executable Specifications With Junit5 Mockito and AssertJ</title>
+      <link>https://sayembd.github.io/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</link>
+      <pubDate>Sun, 26 Apr 2020 22:40:20 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/</guid>
+      <description>Executable Specifications are tests that can also serve as design specifications. They enable technical and business teams to get on the same page by enabling the use of a common language (in DDD-world this is also known as Ubiquitous Language). They function as documentations for the future maintainers of the code. In this article we will see an opinionated way of writing automated tests which could also function as Executable Specifications.</description>
+    </item>
+    
   </channel>
 </rss>
