@@ -1297,5 +1297,249 @@ To improve the performance, all I did was -</p>
 ]]></content:encoded>
     </item>
     
+    <item>
+      <title>Clean Code From the Trenches Validation</title>
+      <link>https://sayembd.github.io/posts/clean-code-from-the-trenches-validation/</link>
+      <pubDate>Fri, 12 May 2017 00:50:12 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/posts/clean-code-from-the-trenches-validation/</guid>
+      <description>Validation using the Composite Pattern in Java. Also demonstrates clean coding practice.</description>
+      <content:encoded><![CDATA[<p>Let&rsquo;s directly start with an example. Consider a simple web service which allows clients to place order to a shop. A very simplified version of the order controller could look something like below -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">&#34;/&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">consumes</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON_VALUE</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">produces</span> <span class="o">=</span> <span class="n">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON_VALUE</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">OrderService</span> <span class="n">orderService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="nf">OrderController</span><span class="o">(</span><span class="n">OrderService</span> <span class="n">orderService</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">orderService</span> <span class="o">=</span> <span class="n">orderService</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nd">@Valid</span> <span class="nd">@RequestBody</span> <span class="n">OrderDTO</span> <span class="n">order</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">orderService</span><span class="o">.</span><span class="na">createOrder</span><span class="o">(</span><span class="n">order</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>And the corresponding DTO class -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Getter</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Setter</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@ToString</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">OrderDTO</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@NotNull</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="n">String</span> <span class="n">customerId</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@NotNull</span>
+</span></span><span class="line"><span class="cl">  <span class="nd">@Size</span><span class="o">(</span><span class="n">min</span> <span class="o">=</span> <span class="n">1</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItem</span><span class="o">&gt;</span> <span class="n">orderItems</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Getter</span>
+</span></span><span class="line"><span class="cl">  <span class="nd">@Setter</span>
+</span></span><span class="line"><span class="cl">  <span class="nd">@ToString</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">OrderItem</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">menuId</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">description</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">price</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">Integer</span> <span class="n">quantity</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>The most common approach for creating an order from this DTO is to pass it to a service, validate it as necessary, and then persist it in the database -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">OrderService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">MenuRepository</span> <span class="n">menuRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">OrderService</span><span class="o">(</span><span class="n">MenuRepository</span> <span class="n">menuRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">menuRepository</span> <span class="o">=</span> <span class="n">menuRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">(</span><span class="n">OrderDTO</span> <span class="n">orderDTO</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">orderDTO</span><span class="o">.</span><span class="na">getOrderItems</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="k">this</span><span class="o">::</span><span class="n">validate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Order {} saved&#34;</span><span class="o">,</span> <span class="n">orderDTO</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">menuId</span> <span class="o">=</span> <span class="n">orderItem</span><span class="o">.</span><span class="na">getMenuId</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">menuId</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">menuId</span><span class="o">.</span><span class="na">trim</span><span class="o">().</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;A menu item must be specified.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(!</span><span class="n">menuRepository</span><span class="o">.</span><span class="na">menuExists</span><span class="o">(</span><span class="n">menuId</span><span class="o">.</span><span class="na">trim</span><span class="o">()))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given menu &#34;</span> <span class="o">+</span> <span class="n">menuId</span> <span class="o">+</span> <span class="s">&#34; does not exist.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">description</span> <span class="o">=</span> <span class="n">orderItem</span><span class="o">.</span><span class="na">getDescription</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">description</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">description</span><span class="o">.</span><span class="na">trim</span><span class="o">().</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Item description should be provided&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">price</span> <span class="o">=</span> <span class="n">orderItem</span><span class="o">.</span><span class="na">getPrice</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">price</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> <span class="n">price</span><span class="o">.</span><span class="na">trim</span><span class="o">().</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Price cannot be empty.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">new</span> <span class="n">BigDecimal</span><span class="o">(</span><span class="n">price</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NumberFormatException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given price is not in valid format&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Quantity must be given&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given quantity &#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="o">+</span> <span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">          <span class="o">+</span> <span class="s">&#34; is not valid.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>The validate method is not well written. It is very hard to test. Introducing new validation rule in the future is also hard, and so is removing/modifying any of the existing ones. From my experience I have seen that most people write a few generic assertions for this type of validation check, typically in an integration test class, touching only one or two (or more, but not all) of the validation rules. As a result, refactoring in the future can only be done in <strong><em><a href="https://www.amazon.com/Working-Effectively-Legacy-Michael-Feathers/dp/0131177052">Edit and Pray</a></em></strong> mode.</p>
+<p>We can improve the code structure if we use Polymorphism to replace these conditionals. Let&rsquo;s create a common super type for representing a single validation rule -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span> 
+</span></span></code></pre></div><p>Next step is to create validation rule implementations which will focus on separate validation areas for the DTO. Let&rsquo;s start with the menu validator -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MenuValidator</span> <span class="kd">implements</span> <span class="n">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">MenuRepository</span> <span class="n">menuRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="nf">MenuValidator</span><span class="o">(</span><span class="n">MenuRepository</span> <span class="n">menuRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">menuRepository</span> <span class="o">=</span> <span class="n">menuRepository</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">menuId</span> <span class="o">=</span> <span class="n">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getMenuId</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">String</span><span class="o">::</span><span class="n">trim</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">id</span> <span class="o">-&gt;</span> <span class="o">!</span><span class="n">id</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;A menu item must be specified.&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(!</span><span class="n">menuRepository</span><span class="o">.</span><span class="na">menuExists</span><span class="o">(</span><span class="n">menuId</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given menu [&#34;</span> <span class="o">+</span> <span class="n">menuId</span> <span class="o">+</span> <span class="s">&#34;] does not exist.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Then the item description validator -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ItemDescriptionValidator</span> <span class="kd">implements</span> <span class="n">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">orderItem</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">OrderItem</span><span class="o">::</span><span class="n">getDescription</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">String</span><span class="o">::</span><span class="n">trim</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">description</span> <span class="o">-&gt;</span> <span class="o">!</span><span class="n">description</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Item description should be provided&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Price validator -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">PriceValidator</span> <span class="kd">implements</span> <span class="n">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">price</span> <span class="o">=</span> <span class="n">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">orderItem</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">OrderItem</span><span class="o">::</span><span class="n">getPrice</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">String</span><span class="o">::</span><span class="n">trim</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">itemPrice</span> <span class="o">-&gt;</span> <span class="o">!</span><span class="n">itemPrice</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Price cannot be empty.&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">new</span> <span class="n">BigDecimal</span><span class="o">(</span><span class="n">price</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NumberFormatException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given price [&#34;</span> <span class="o">+</span> <span class="n">price</span> <span class="o">+</span> <span class="s">&#34;] is not in valid format&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>And finally, the quantity validator -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">QuantityValidator</span> <span class="kd">implements</span> <span class="n">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Integer</span> <span class="n">quantity</span> <span class="o">=</span> <span class="n">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">orderItem</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">OrderItem</span><span class="o">::</span><span class="n">getQuantity</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Quantity must be given&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">quantity</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given quantity &#34;</span> <span class="o">+</span> <span class="n">quantity</span> <span class="o">+</span> <span class="s">&#34; is not valid.&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Each of these validator implementations can now be easily tested, independently from each other. Reasoning about each one of them also becomes easier. and so are future addition/modification/removal.</p>
+<p>Now the wiring part. How can we integrate these validators with the order service?</p>
+<p>One way would be to directly create a list in the OrderService constructor, and populate it with the validators. Or we could use Spring to inject a List into the OrderService -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">OrderService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItemValidator</span><span class="o">&gt;</span> <span class="n">validators</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">OrderService</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItemValidator</span><span class="o">&gt;</span> <span class="n">validators</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">validators</span> <span class="o">=</span> <span class="n">validators</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">(</span><span class="n">OrderDTO</span> <span class="n">orderDTO</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">orderDTO</span><span class="o">.</span><span class="na">getOrderItems</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="k">this</span><span class="o">::</span><span class="n">validate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Order {} saved&#34;</span><span class="o">,</span> <span class="n">orderDTO</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">validators</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">validator</span> <span class="o">-&gt;</span> <span class="n">validator</span><span class="o">.</span><span class="na">validate</span><span class="o">(</span><span class="n">orderItem</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>In order for this to work we will have to declare each of the validator implementations as a Spring Bean.</p>
+<p>We could improve our abstraction even further. The OrderService is now accepting a List of the validators. However, we can change it to be only aware of the OrderItemValidator type, and nothing else. This gives us the flexibility of injecting either a single validator or any composition of validators in the future.</p>
+<p>So now our goal is to change the order service to treat a composition of order item validators in the same way as a single validator. There is a well-known design pattern called <a href="https://sourcemaking.com/design_patterns/composite">Composite</a> which lets us do exactly that.</p>
+<p>Let&rsquo;s create a new implementation of the validator interface, which will be the composite -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">OrderItemValidatorComposite</span> <span class="kd">implements</span> <span class="n">OrderItemValidator</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItemValidator</span><span class="o">&gt;</span> <span class="n">validators</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">OrderItemValidatorComposite</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItemValidator</span><span class="o">&gt;</span> <span class="n">validators</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">validators</span> <span class="o">=</span> <span class="n">validators</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">validate</span><span class="o">(</span><span class="n">OrderItem</span> <span class="n">orderItem</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">validators</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">validator</span> <span class="o">-&gt;</span> <span class="n">validator</span><span class="o">.</span><span class="na">validate</span><span class="o">(</span><span class="n">orderItem</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>We then create a new Spring configuration class, which will instantiate and initialize this composite, and then expose it as a bean -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Configuration</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">ValidatorConfiguration</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Bean</span>
+</span></span><span class="line"><span class="cl">  <span class="n">OrderItemValidator</span> <span class="nf">orderItemValidator</span><span class="o">(</span><span class="n">MenuRepository</span> <span class="n">menuRepository</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">new</span> <span class="n">OrderItemValidatorComposite</span><span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">new</span> <span class="n">MenuValidator</span><span class="o">(</span><span class="n">menuRepository</span><span class="o">),</span>
+</span></span><span class="line"><span class="cl">        <span class="k">new</span> <span class="n">ItemDescriptionValidator</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="k">new</span> <span class="n">PriceValidator</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="k">new</span> <span class="n">QuantityValidator</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">    <span class="o">));</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>We then change the OrderService class in the following way -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Service</span>
+</span></span><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">class</span> <span class="nc">OrderService</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">OrderItemValidator</span> <span class="n">validator</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">OrderService</span><span class="o">(</span><span class="n">OrderItemValidator</span> <span class="n">orderItemValidator</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">validator</span> <span class="o">=</span> <span class="n">orderItemValidator</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kt">void</span> <span class="nf">createOrder</span><span class="o">(</span><span class="n">OrderDTO</span> <span class="n">orderDTO</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">orderDTO</span><span class="o">.</span><span class="na">getOrderItems</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">validator</span><span class="o">::</span><span class="n">validate</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Order {} saved&#34;</span><span class="o">,</span> <span class="n">orderDTO</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>And we are done!</p>
+<p>The benefits of this approach are many. The whole validation logic has completely been abstracted away from the ordering service. Testing is easier. Future maintenance is easier. Clients only know about one validator type, and nothing else.</p>
+<p>However, all of the above come with some problems too. Sometimes people are not comfortable with this design. They may feel like this is just too much abstraction, or that they will not be needing this much flexibility or testability for future maintenance. I&rsquo;d suggest to adopt this approach based on the team culture. After all, there is no single right way of doing things in Software Development.</p>
+<p>Note that for the sake of this article I have taken some short cuts here as well. These includes throwing a generic IllegalArgumentException when validation fails. You&rsquo;d probably want a more specific/custom exception in a production-grade application to identify between different scenarios. The decimal parsing is also done naively, you might want to fix on a specific format, and then use DecimalFormat to parse it.</p>
+<p>The full code has been uploaded to <a href="https://github.com/sayembd/java-examples/tree/20170511-clean-code-from-the-trenches-validation/java-validation">Github</a>.</p>
+<p>If you find any typo/other errors please feel free to comment in!</p>
+]]></content:encoded>
+    </item>
+    
   </channel>
 </rss>
