@@ -782,5 +782,253 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 ]]></content:encoded>
     </item>
     
+    <item>
+      <title>A Brief Overview of the Fork Join Framework in Java</title>
+      <link>https://sayembd.github.io/posts/a-brief-overview-of-the-fork-join-framework-in-java/</link>
+      <pubDate>Sun, 16 Dec 2018 22:17:05 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/posts/a-brief-overview-of-the-fork-join-framework-in-java/</guid>
+      <description>A tutorial which demonstrates how to use Fork/Join framework in Java for both blocking and non-blocking tasks.</description>
+      <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>The Fork/Join framework is a framework to solve a problem using a concurrent divide-and-conquer approach. They were introduced to complement the existing concurrency API. Before their introduction, the existing ExecutorService implementations were the popular choice to run asynchronous tasks, but they work best when the tasks are homogenous and independent. Running dependent tasks and combining their results using those implementations were not easy. With the introduction of the Fork/Join framework, an attempt was made to address this shortcoming. In this post, we will take a brief look at the API and solve a couple of simple problems to understand how they work.</p>
+<h2 id="solving-a-non-blocking-task">Solving a non-blocking task</h2>
+<p>Let&rsquo;s jump directly into code. Let&rsquo;s create a task which would return the sum of all elements of a List. The following steps represent our algorithm in pseudo-code:</p>
+<ol>
+<li>Find the middle index of the list</li>
+<li>Divide the list in the middle</li>
+<li>Recursively create a new task which will compute the sum of the left part</li>
+<li>Recursively create a new task which will compute the sum of the right part</li>
+<li>Add the result of the left sum, the middle element, and the right sum</li>
+</ol>
+<p>Here is the code -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ListSummer</span> <span class="kd">extends</span> <span class="n">RecursiveTask</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">listToSum</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">listToSum</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">listToSum</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">protected</span> <span class="n">Integer</span> <span class="nf">compute</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">listToSum</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Found empty list, sum is 0&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middleIndex</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="n">2</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;List {}, middle Index: {}&#34;</span><span class="o">,</span> <span class="n">listToSum</span><span class="o">,</span> <span class="n">middleIndex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">leftSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">0</span><span class="o">,</span> <span class="n">middleIndex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">rightSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middleIndex</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">leftSummer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">leftSublist</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">rightSummer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">rightSublist</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">leftSummer</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rightSummer</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Integer</span> <span class="n">leftSum</span> <span class="o">=</span> <span class="n">leftSummer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Integer</span> <span class="n">rightSum</span> <span class="o">=</span> <span class="n">rightSummer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">total</span> <span class="o">=</span> <span class="n">leftSum</span> <span class="o">+</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">middleIndex</span><span class="o">)</span> <span class="o">+</span> <span class="n">rightSum</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Left sum is {}, right sum is {}, total is {}&#34;</span><span class="o">,</span> <span class="n">leftSum</span><span class="o">,</span> <span class="n">rightSum</span><span class="o">,</span> <span class="n">total</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">total</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Firstly, we extend the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/RecursiveTask.html">RecursiveTask</a> subtype of the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinTask.html">ForkJoinTask</a>. This is the type to extend from when we expect our concurrent task to return a result. When a task does not return a result but only perform an effect, we extend the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/RecursiveAction.html">RecursiveAction</a> subtype. For most of the practical tasks that we solve, these two subtypes are sufficient.</p>
+<p>Secondly, both RecursiveTask and RecursiveAction define an abstract compute method. This is where we put our computation.</p>
+<p>Thirdly, inside our compute method, we check the size of the list that is passed through the constructor. If it is empty, we already know the result of the sum which is zero, and we return immediately. Otherwise, we divide our lists into two sublists and create two instances of our ListSummer type. We then call the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinTask.html#fork()">fork()</a> method (defined in ForkJoinTask) on these two instances -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">leftSummer</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">rightSummer</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span></code></pre></div><p>Which cause these tasks to be scheduled for asynchronous execution, the exact mechanism which is used for this purpose will be explained later in this post.</p>
+<p>After that, we invoke the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinTask.html#join()">join()</a> method (also defined in ForkJoinTask) to wait for the result of these two parts -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Integer</span> <span class="n">leftSum</span> <span class="o">=</span> <span class="n">leftSummer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">Integer</span> <span class="n">rightSum</span> <span class="o">=</span> <span class="n">rightSummer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span></code></pre></div><p>Which are then summed with the middle element of the list to get the final result.</p>
+<p>Plenty of log messages have been added to make the example easier to understand. However, when we process a list containing thousands of entries, it might not be a good idea to have this detailed logging, especially logging the entire list.</p>
+<p>That&rsquo;s pretty much it. Let&rsquo;s create a test class now for a test run -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ListSummerTest</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldSumEmptyList</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">forkJoinPool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">forkJoinPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">summer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">summer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isZero</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldSumListWithOneElement</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">5</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">forkJoinPool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">forkJoinPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">summer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">summer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">5</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldSumListWithMultipleElements</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">1</span><span class="o">,</span> <span class="n">2</span><span class="o">,</span> <span class="n">3</span><span class="o">,</span> <span class="n">4</span><span class="o">,</span> <span class="n">5</span><span class="o">,</span> <span class="n">6</span><span class="o">,</span> <span class="n">7</span><span class="o">,</span> <span class="n">8</span><span class="o">,</span> <span class="n">9</span>
+</span></span><span class="line"><span class="cl">    <span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">forkJoinPool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">forkJoinPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">summer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">summer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">45</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>In the test, we create an instance of the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinPool.html">ForkJoinPool</a>. A ForkJoinPool is a unique ExecutorService implementation for running ForkJoinTasks. It employs a special algorithm known as the work-stealing algorithm. Contrary to the other ExecutorService implementations where there is only a single queue holding all the tasks to be executed, in a work-stealing implementation, each worker thread gets its work queue. Each thread starts executing tasks from their queue. When we detect that a ForkJoinTask can be broken down into multiple smaller subtasks, we do break them into smaller tasks, and then we invoke the fork() method on those tasks. This invocation causes the subtasks to be pushed into the executing thread&rsquo;s queue. During the execution, when one thread exhausts its queue/has no tasks to execute, it can &ldquo;steal&rdquo; tasks from other thread&rsquo;s queue (hence the name &ldquo;work-stealing&rdquo;). This stealing behaviour is what results in a better throughput than using any other ExecutorService implementations.</p>
+<p>Earlier, when we invoked fork() on our leftSummer and rightSummer task instances, they got pushed into the work queue of the executing thread, after which they were &ldquo;stolen&rdquo; by other active threads in the pool (and so on) since they did not have anything else to do at that point.</p>
+<p>Pretty cool, right?</p>
+<h2 id="solving-a-blocking-task">Solving a blocking task</h2>
+<p>The problem we solved just now is non-blocking in nature. If we want to solve a problem which does some blocking operation, then to have a better throughput we will need to change our strategy.</p>
+<p>Let&rsquo;s examine this with another example. Let&rsquo;s say we want to create a very simple web crawler. This crawler will receive a list of HTTP links, execute GET requests to fetch the response bodies, and then calculate the response length. Here is the code -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ResponseLengthCalculator</span> <span class="kd">extends</span> <span class="n">RecursiveTask</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">links</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">links</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">.</span><span class="na">links</span> <span class="o">=</span> <span class="n">links</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">protected</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="nf">compute</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;No more links to fetch&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">Collections</span><span class="o">.</span><span class="na">emptyMap</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middle</span> <span class="o">=</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="n">2</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Middle index: {}&#34;</span><span class="o">,</span> <span class="n">links</span><span class="o">,</span> <span class="n">middle</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">leftPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">0</span><span class="o">,</span> <span class="n">middle</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">rightPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middle</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Forking left partition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">leftPartition</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Left partition forked, now forking right partition&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">rightPartition</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Right partition forked&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">middleLink</span> <span class="o">=</span> <span class="n">links</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">middle</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HttpRequester</span> <span class="n">httpRequester</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpRequester</span><span class="o">(</span><span class="n">middleLink</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">String</span> <span class="n">response</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Calling managedBlock for {}&#34;</span><span class="o">,</span> <span class="n">middleLink</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">ForkJoinPool</span><span class="o">.</span><span class="na">managedBlock</span><span class="o">(</span><span class="n">httpRequester</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">response</span> <span class="o">=</span> <span class="n">httpRequester</span><span class="o">.</span><span class="na">response</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Error occurred while trying to implement blocking link fetcher&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">response</span> <span class="o">=</span> <span class="s">&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">responseMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;(</span><span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">leftLinks</span> <span class="o">=</span> <span class="n">leftPartition</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">responseMap</span><span class="o">.</span><span class="na">putAll</span><span class="o">(</span><span class="n">leftLinks</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">responseMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">middleLink</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">length</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">rightLinks</span> <span class="o">=</span> <span class="n">rightPartition</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">responseMap</span><span class="o">.</span><span class="na">putAll</span><span class="o">(</span><span class="n">rightLinks</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Left map {}, middle length {}, right map {}&#34;</span><span class="o">,</span> <span class="n">leftLinks</span><span class="o">,</span> <span class="n">response</span><span class="o">.</span><span class="na">length</span><span class="o">(),</span> <span class="n">rightLinks</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">responseMap</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">HttpRequester</span> <span class="kd">implements</span> <span class="n">ForkJoinPool</span><span class="o">.</span><span class="na">ManagedBlocker</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">link</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">response</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="nf">HttpRequester</span><span class="o">(</span><span class="n">String</span> <span class="n">link</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">this</span><span class="o">.</span><span class="na">link</span> <span class="o">=</span> <span class="n">link</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">block</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">HttpGet</span> <span class="n">headRequest</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpGet</span><span class="o">(</span><span class="n">link</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">CloseableHttpClient</span> <span class="n">client</span> <span class="o">=</span> <span class="n">HttpClientBuilder</span>
+</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="na">create</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="na">disableRedirectHandling</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">          <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">      
+</span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Executing blocking request for {}&#34;</span><span class="o">,</span> <span class="n">link</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      
+</span></span><span class="line"><span class="cl">      <span class="k">try</span> <span class="o">(</span><span class="n">client</span><span class="o">;</span> <span class="n">CloseableHttpResponse</span> <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">headRequest</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;HTTP request for link {} has been executed&#34;</span><span class="o">,</span> <span class="n">link</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">response</span> <span class="o">=</span> <span class="n">EntityUtils</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">getEntity</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Error while trying to fetch response from link {}: {}&#34;</span><span class="o">,</span> <span class="n">link</span><span class="o">,</span> <span class="n">e</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">response</span> <span class="o">=</span> <span class="s">&#34;&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">      <span class="o">}</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isReleasable</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>We create an implementation of the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinPool.ManagedBlocker.html">ForkJoinPool.ManagedBlocker</a> where we put the blocking HTTP call. This interface defines two methods - block() and isReleasable(). The block() method is where we put our blocking call. After we are done with our blocking operation, we return true indicating that no further blocking is necessary. We return false from the isReleasable() implementation to indicate to a fork-join worker thread that the block() method implementation is potentially blocking in nature. The isReleasable() implementation will be invoked by a fork-join worker thread first before it invokes the block() method. Finally, we submit our  HttpRequester instance to our pool by invoking ForkJoinPool.managedBlock() static method. After that our blocking task will start executing. When it blocks on the HTTP request, the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinPool.html#managedBlock(java.util.concurrent.ForkJoinPool.ManagedBlocker)">ForkJoinPool.managedBlock()</a> method will also arrange for a spare thread to be activated if necessary to ensure sufficient parallelism.</p>
+<p>Let&rsquo;s take this implementation for a test drive then! Here&rsquo;s the code -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ResponseLengthCalculatorTest</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldReturnEmptyMapForEmptyList</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">responseLengthCalculator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">Collections</span><span class="o">.</span><span class="na">emptyList</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">pool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">responseLengthCalculator</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">responseLengthCalculator</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEmpty</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldHandle200Ok</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">responseLengthCalculator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;http://httpstat.us/200&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">pool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">responseLengthCalculator</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">responseLengthCalculator</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="n">1</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">containsKeys</span><span class="o">(</span><span class="s">&#34;http://httpstat.us/200&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">containsValue</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldFetchResponseForDifferentResponseStatus</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">responseLengthCalculator</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;http://httpstat.us/200&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;http://httpstat.us/302&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;http://httpstat.us/404&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s">&#34;http://httpstat.us/502&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">pool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">pool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">responseLengthCalculator</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">responseLengthCalculator</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="n">4</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>That&rsquo;s it for today, folks! As always, any feedback/improvement suggestions/comments are highly appreciated!</p>
+<p>All the examples discussed here can be found on <a href="https://github.com/sayembd/java-examples">Github</a>.</p>
+<p>A big shout out to the awesome <a href="http://httpstat.us">http://httpstat.us</a> service, it was quite helpful for developing the simple tests.</p>
+]]></content:encoded>
+    </item>
+    
   </channel>
 </rss>
