@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Random Musings</title>
+    <link>https://sayembd.github.io/</link>
+    <description>Recent content on Random Musings</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <lastBuildDate>Mon, 19 Oct 2020 02:38:52 +0200</lastBuildDate><atom:link href="https://sayembd.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>How to Build Observable Systems - An Introduction to Observability</title>
+      <link>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</link>
+      <pubDate>Mon, 19 Oct 2020 02:38:52 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</guid>
+      <description>Introduction Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.
+What is Observability? Observability is a term or a concept that has its root in Physics, mainly in Control Theory.</description>
+    </item>
+    
+    <item>
+      <title>About Me</title>
+      <link>https://sayembd.github.io/about-me/</link>
+      <pubDate>Sun, 07 Aug 2022 02:51:07 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/about-me/</guid>
+      <description>Thank you very much for reading my blog.
+My name is MD Sayem Ahmed. I am a Software Engineer by profession and currently living and working in Berlin, Germany.
+I love working with complex distributed systems and building high-performance web applications. I am most experienced in Java-based technologies like Spring, JPA, Servlets, JSP, and related technologies, but I don&amp;rsquo;t mind working with other languages and tools if needed.
+Here is a short list of my online profiles where you can find more information about me and my work -</description>
+    </item>
+    
+  </channel>
+</rss>
