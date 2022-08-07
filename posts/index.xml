@@ -12,8 +12,7 @@
       <pubDate>Mon, 19 Oct 2020 02:38:52 +0200</pubDate>
       
       <guid>https://sayembd.github.io/posts/how-to-build-observable-system-an-introduction-to-observability/</guid>
-      <description>Introduction Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.
-What is Observability? Observability is a term or a concept that has its root in Physics, mainly in Control Theory.</description>
+      <description>What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.</description>
     </item>
     
     <item>
