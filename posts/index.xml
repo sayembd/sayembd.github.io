@@ -1222,5 +1222,80 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 ]]></content:encoded>
     </item>
     
+    <item>
+      <title>Jpa Tips: Avoiding the N &#43; 1 Select Problem</title>
+      <link>https://sayembd.github.io/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</link>
+      <pubDate>Sun, 22 Apr 2018 18:21:11 +0200</pubDate>
+      
+      <guid>https://sayembd.github.io/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/</guid>
+      <description>An explanation of the N&#43;1 select problem in JPA and Hibernate, along with some solutions.</description>
+      <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>ORM frameworks like JPA simplifies our development process by helping us to avoid lots of boilerplate code during the object &lt;-&gt; relational data mapping. However, they also bring some additional problems to the table, and N + 1 is one of them. In this article we will take a short look at the problem along with some ways to avoid them.</p>
+<h2 id="the-problem">The Problem</h2>
+<p>As an example I will use a simplified version of an online book ordering application. In such application I might create an entity like below to represent a Purchase Order -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PurchaseOrder</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Id</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">id</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">String</span> <span class="n">customerId</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@OneToMany</span><span class="o">(</span><span class="n">cascade</span> <span class="o">=</span> <span class="n">ALL</span><span class="o">,</span> <span class="n">fetch</span> <span class="o">=</span> <span class="n">EAGER</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@JoinColumn</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#34;purchase_order_id&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">PurchaseOrderItem</span><span class="o">&gt;</span> <span class="n">purchaseOrderItems</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span> 
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>A purchase order consists of an order id, a customer id, and one or more items that are being bought. The PurchaseOrderItem entity might have the following structure -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Entity</span> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">PurchaseOrderItem</span> <span class="o">{</span> <span class="nd">@Id</span> <span class="kd">private</span> <span class="n">String</span> <span class="n">id</span><span class="o">;</span> <span class="kd">private</span> <span class="n">String</span> <span class="n">bookId</span><span class="o">;</span> <span class="o">}</span> 
+</span></span></code></pre></div><p>These entities have been simplified a lot, but for the purpose of this article, this will do.</p>
+<p>Now suppose that we need to find the orders of a customer to display them in his purchase order history. The following query will serve this purpose -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">PurchaseOrder</span><span class="w"> </span><span class="n">P</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">P</span><span class="p">.</span><span class="n">customerId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">:</span><span class="n">customerId</span><span class="w">
+</span></span></span></code></pre></div><p>which when translated to SQL looks something like below -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">select</span><span class="w"> </span><span class="n">purchaseor0_</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">id1_1_</span><span class="p">,</span><span class="w"> </span><span class="n">purchaseor0_</span><span class="p">.</span><span class="n">customer_id</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="n">customer2_1_</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">purchase_order</span><span class="w"> </span><span class="n">purchaseor0_</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">purchaseor0_</span><span class="p">.</span><span class="n">customer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">?</span><span class="w"> 
+</span></span></span></code></pre></div><p>This one query will return all purchase orders that a customer has. However, in order to fetch the order items, JPA will issue separate queries for each individual order.  If, for example, a customer has 5 orders, then JPA will issue 5 additional queries to fetch the order items included in those orders. This is basically known as the N + 1 problem - 1 query to fetch all N purchase orders, and N queries to fetch all order items.</p>
+<p>This behavior creates a scalability problem for us when our data grows. Even a moderate number of orders and items can create significant performance issues.</p>
+<h2 id="the-solution">The Solution</h2>
+<h3 id="avoiding-eager-fetching">Avoiding Eager Fetching</h3>
+<p>This the main reason behind the issue. We should get rid of all the eager fetching from our mapping. They have almost no benefits that justify their use in a production-grade application. We should mark all relationships as Lazy instead.</p>
+<p>One important point to note - marking a relationship mapping as Lazy does not guarantee that the underlying persistent provider will also treat it as such. The JPA specification does not guarantee the lazy fetch. It&rsquo;s a hint to the persistent provider at best. However, considering Hibernate, I have never seen it doing otherwise.</p>
+<h3 id="only-fetching-the-data-that-are-actually-needed">Only fetching the data that are actually needed</h3>
+<p>This is always recommended regardless of the decision to go for eager/lazy fetching.</p>
+<p>I remember one N + 1 optimization that I did which improved the maximum response time of a REST endpoint <strong>from 17 minutes to 1.5 seconds</strong>. The endpoint was fetching a single entity based on some criteria, which for our current example will be something along the line of -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">TypedQuery</span><span class="o">&lt;</span><span class="n">PurchaseOrder</span><span class="o">&gt;</span> <span class="n">jpaQuery</span> <span class="o">=</span> <span class="n">entityManager</span><span class="o">.</span><span class="na">createQuery</span><span class="o">(</span><span class="s">&#34;SELECT P FROM PurchaseOrder P WHERE P.customerId = :customerId&#34;</span><span class="o">,</span> <span class="n">PurchaseOrder</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">jpaQuery</span><span class="o">.</span><span class="na">setParameter</span><span class="o">(</span><span class="s">&#34;customerId&#34;</span><span class="o">,</span> <span class="s">&#34;Sayem&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PurchaseOrder</span> <span class="n">purchaseOrder</span> <span class="o">=</span> <span class="n">jpaQuery</span><span class="o">.</span><span class="na">getSingleResult</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// after some calculation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">anotherRepository</span><span class="o">.</span><span class="na">findSomeStuff</span><span class="o">(</span><span class="n">purchaseOrder</span><span class="o">.</span><span class="na">getId</span><span class="o">());</span>
+</span></span></code></pre></div><p>The id is the only data from the result that was needed for subsequent calculations.</p>
+<p>There were a few customers who had more than a thousand orders. Each one of the orders in turn had a few thousands additional children of a few different types. Needless to say, as a result, thousands of queries were being executed in the database whenever requests for those orders were received at this endpoint.<br>
+To improve the performance, all I did was -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">TypedQuery</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">jpaQuery</span> <span class="o">=</span> <span class="n">entityManager</span><span class="o">.</span><span class="na">createQuery</span><span class="o">(</span><span class="s">&#34;SELECT P.id FROM PurchaseOrder P WHERE P.customerId = :customerId&#34;</span><span class="o">,</span> <span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">jpaQuery</span><span class="o">.</span><span class="na">setParameter</span><span class="o">(</span><span class="s">&#34;customerId&#34;</span><span class="o">,</span> <span class="s">&#34;Sayem&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">String</span> <span class="n">orderId</span> <span class="o">=</span> <span class="n">jpaQuery</span><span class="o">.</span><span class="na">getSingleResult</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// after some calculation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">anotherRepository</span><span class="o">.</span><span class="na">findSomeStuff</span><span class="o">(</span><span class="n">orderId</span><span class="o">);</span>
+</span></span></code></pre></div><p>Just this change resulted in a <strong>680x improvement</strong>.</p>
+<p>If we want to fetch more than one properties, then we can make use of the Constructor Expression that JPA provides -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">TypedQuery</span><span class="o">&lt;</span><span class="n">PurchaseOrderDTO</span><span class="o">&gt;</span> <span class="n">jpaQuery</span> <span class="o">=</span> <span class="n">entityManager</span><span class="o">.</span><span class="na">createQuery</span><span class="o">(</span> 
+</span></span><span class="line"><span class="cl">    <span class="s">&#34;SELECT &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s">&#34;NEW com.codesod.example.jpa.nplusone.dto.PurchaseOrderDTO(P.id, P.orderDate) &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s">&#34;FROM &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s">&#34;PurchaseOrder P &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s">&#34;WHERE &#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">+</span> <span class="s">&#34;P.customerId = :customerId&#34;</span><span class="o">,</span> <span class="n">PurchaseOrderDTO</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">jpaQuery</span><span class="o">.</span><span class="na">setParameter</span><span class="o">(</span><span class="s">&#34;customerId&#34;</span><span class="o">,</span> <span class="s">&#34;Sayem&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">List</span><span class="o">&lt;</span><span class="n">PurchaseOrderDTO</span><span class="o">&gt;</span> <span class="n">orders</span> <span class="o">=</span> <span class="n">jpaQuery</span><span class="o">.</span><span class="na">getResultList</span><span class="o">();</span> 
+</span></span></code></pre></div><p>A few caveats of using the constructor expression -</p>
+<ol>
+<li>The target DTO must have a constructor whose parameter list match the columns being seleected</li>
+<li>The fully qualified name of the DTO class must be specified</li>
+</ol>
+<h3 id="useing-join-fetch--entity-graphs">Useing Join Fetch / Entity Graphs</h3>
+<p>We can use <a href="https://www.objectdb.com/java/jpa/query/jpql/from#LEFT_OUTER__INNER_JOIN_FETCH_">JOIN FETCH</a> in our queries whenever we need to fetch an entity with all of its children at the same time. This results in a much less database traffic resulting in an improved performance.</p>
+<p>JPA 2.1 specification introduced Entity Graphs which allows us to create static/dynamic query load plans. <a href="https://www.thoughts-on-java.org/">Thorben Janssen</a> has written a couple of posts (<a href="https://www.thoughts-on-java.org/jpa-21-entity-graph-part-1-named-entity/">here</a> and <a href="https://www.thoughts-on-java.org/jpa-21-entity-graph-part-2-define/">here</a>) detailing their usage which are worth checking out.</p>
+<p>Some example code for this post can be found at <a href="https://github.com/sayembd/java-examples/tree/master/jpa-example">Github</a>.</p>
+]]></content:encoded>
+    </item>
+    
   </channel>
 </rss>
