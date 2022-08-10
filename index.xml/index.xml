@@ -780,6 +780,79 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
     </item>
     
     <item>
+      <title>Different States of Java Threads</title>
+      <link>https://www.sayemahmed.com/posts/different-states-of-java-threads/</link>
+      <pubDate>Mon, 14 Jan 2019 02:38:52 +0200</pubDate>
+      
+      <guid>https://www.sayemahmed.com/posts/different-states-of-java-threads/</guid>
+      <description>This article explains the different states a Java Thread can have, and all possible transitions between them.</description>
+      <content:encoded><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>In Java, threads can have States. The <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Thread.State.html">Thread.State</a> enum defines the different states that a Java thread can have. This enum defines the following values -</p>
+<ol>
+<li>NEW</li>
+<li>RUNNABLE</li>
+<li>BLOCKED</li>
+<li>WAITING</li>
+<li>TIMED_WAITING</li>
+<li>TERMINATED</li>
+</ol>
+<p>In the subsequent sections I will provide a brief overview of these states along with possible transitions between them.</p>
+<h2 id="states-of-a-java-thread">States of a Java Thread</h2>
+<h3 id="new">NEW</h3>
+<p>This is the default state a thread gets when it is first created.</p>
+<h3 id="runnable">RUNNABLE</h3>
+<p>As soon as a thread starts executing, it moves to the RUNNABLE state.</p>
+<p>Note that a thread that is waiting to acquire a CPU for execution is still considered to be in this state.</p>
+<h3 id="blocked">BLOCKED</h3>
+<p>A thread moves to the BLOCKED state as soon as it gets blocked waiting for a monitor lock. This can happen in one of the following two ways -</p>
+<ol>
+<li>It&rsquo;s waiting to acquire a lock to enter a synchronised block/method.</li>
+<li>It&rsquo;s waiting to reacquire the monitor lock of an object on which it invoked the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html#wait()">Object.wait</a> method.</li>
+</ol>
+<h3 id="waiting">WAITING</h3>
+<p>A thread moves to this state as a result of invoking one of the following methods -</p>
+<ol>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html#wait()">Object.wait</a> without a timeout</li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Thread.html#join()">Thread.join</a> without a timeout</li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/locks/LockSupport.html#park()">LockSupport.park</a></li>
+</ol>
+<h3 id="timed_waiting">TIMED_WAITING</h3>
+<p>A thread moves to this state as a result of invoking one of the following methods -</p>
+<ol>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Thread.html#sleep(long)">Thread.sleep</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html#wait(long)">Object.wait</a> with a timeout</li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Thread.html#join(long)">Thread.join</a> with a timeout</li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/locks/LockSupport.html#parkNanos(long)">LockSupport.parkNanos</a></li>
+<li><a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/locks/LockSupport.html#parkUntil(long)">LockSupport.parkUntil</a></li>
+</ol>
+<h3 id="terminated">TERMINATED</h3>
+<p>As soon as a thread terminates, it moves to this state.</p>
+<h2 id="possible-state-transitions">Possible state transitions</h2>
+<p>The following diagram shows the possible transitions between different states -</p>
+<p><img loading="lazy" src="/posts/different-states-of-java-threads/thread-state-transitions.png" type="" alt="Thread State Transitions"  /></p>
+<p>As soon as a thread gets scheduled for execution, it moves to the RUNNABLE state. This transition has been shown with the first arrow (marked as 1).</p>
+<p>From the RUNNABLE state, a thread can move to any of the BLOCKED, WAITING, TIMED_WAITING, or TERMINATED state. Theoretically speaking, if a thread does not wait to acquire any lock, or does not sleep, or does not invoke any of the methods which makes it wait, it just finishes its execution and directly goes to the TERMINATED state (marked as 2d).</p>
+<p>Of course in a practical application, the above scenario is highly unlikely. Often a thread tries to acquire a lock, in which case it moves to the BLOCKED (marked as 2a) state if it has to wait for the lock. Threads also explicitly wait for some preconditions to be true/actions from other threads, in which case they move to the WAITING (marked as 2b) or the TIMED_WAITING (marked as 2c) state, depending on whether the waits were timed or not.</p>
+<p>Once a thread moves to the BLOCKED state, the only possible transition that is allowed next is to move to the RUNNABLE state (marked as 3d).</p>
+<p>Similarly, the only possible transition from the WAITING state is to move to the BLOCKED state (marked as 3c).</p>
+<p>Please note that some of the articles on the internet incorrectly adds a transition from the WAITING to the RUNNABLE state. This is just not correct. A thread can never move to the RUNNABLE state from the WAITING state directly. We can understand the reason for this with an example.</p>
+<p>Suppose that we have a thread T which is currently in the RUNNABLE state and holds the monitor lock of three objects a, b, and c, as shown in the diagram below -</p>
+<p><img loading="lazy" src="/posts/different-states-of-java-threads/before-invoking-wait.png" type="" alt="Before invoking wait"  /></p>
+<p>At this point, T invokes c.wait(), after which it no longer holds the monitor lock of object c -</p>
+<p><img loading="lazy" src="/posts/different-states-of-java-threads/after-invoking-wait.png" type="" alt="After invoking wait"  /></p>
+<p>As soon as T is notified using an invocation of notify/notifyAll, it stops waiting and competes with other threads (let&rsquo;s say, X and Y) to acquire the monitor lock of c -</p>
+<p><img loading="lazy" src="/posts/different-states-of-java-threads/after-invoking-wait-compete.png" type="" alt="After invoking wait compete"  /></p>
+<p>which, according to the definitions above, is the BLOCKED state. Only after acquiring the monitor lock of c, T moves to the RUNNABLE state. Similar reasoning can be applied for the Thread.join() (which internally uses Object.wait()) and LockSupport.park().</p>
+<p>Let&rsquo;s get back to our original state transition diagram. As we can see, a thread can move to either the RUNNABLE (marked as 3b) or the BLOCKED (marked as 3a) state from the TIMED_WAITING state. The transition to RUNNABLE is possible in this case because a thread can enter the TIMED_WAITING state after invoking the Thread.sleep method, in which case it retains all the monitor locks it currently holds.</p>
+<p>As a thread finishes execution after moving back and forth between the RUNNABLE, BLOCKED, WAITING or TIMED_WAITING state, it moves to the TERMINATED state once and for all.</p>
+<h2 id="how-do-we-get-the-current-state-of-a-thread">How do we get the current state of a Thread?</h2>
+<p>We can use the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Thread.html#getState()">Thread.getState()</a> method to retrieve the current state of a thread. We can use this value to monitor or debug any concurrency issues that our application might face in production.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this article we briefly reviewed different states a Java thread can have, and how a thread moves between these states. As always, any feedback/improvement suggestions/comments is highly appreciated!</p>
+]]></content:encoded>
+    </item>
+    
+    <item>
       <title>A Brief Overview of the Fork Join Framework in Java</title>
       <link>https://www.sayemahmed.com/posts/a-brief-overview-of-the-fork-join-framework-in-java/</link>
       <pubDate>Sun, 16 Dec 2018 22:17:05 +0200</pubDate>
