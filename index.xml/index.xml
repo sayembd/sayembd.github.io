@@ -17,7 +17,7 @@
 <p>Logging is an essential part of any modern Java application. Logs allow us to understand the runtime behaviour of our applications. They also help us capture the context when errors occur. Without logging debugging a production issue will often be quite tricky. Throughout my career, I have found specific logging patterns more valuable than others when on-call. And some - not so much. In this blog post, I will talk about a few of them with examples.</p>
 <h1 id="context">Context</h1>
 <p>All patterns or anti-patterns always have an associated context. In the following discussion, I assume a high-traffic web application is doing all the logging. By &ldquo;high-traffic&rdquo;, I mean a web application serving at least 30K requests per second.</p>
-<h1 id="on-call-friendly-pattern-1---avoiding-duplicate-error-logs-while-preserving-the-context">On-call-friendly pattern 1 - avoiding duplicate error logs while preserving the context</h1>
+<h1 id="1-avoiding-duplicate-error-logs-while-preserving-the-context">1. Avoiding duplicate error logs while preserving the context</h1>
 <p>Consider the following code -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">SomeResult</span> <span class="nf">performSomeOperation</span><span class="o">(</span><span class="n">SomeData</span> <span class="n">someData</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
@@ -50,7 +50,7 @@
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></div><p>This logging does not have the above problems. It does not create duplicate log messages. It also preserves the original error context. Identifying and filtering them out from the log is also relatively easy.</p>
 <p>Having precisely one log message per error has other advantages. It makes it easy to count the exact number of errors at a particular time. If the exception is occurring due to a timed-out API call, then searching the log for <code>ERROR</code> levels within a, say, 30-minute time window will return the exact number of failed API calls within the period.</p>
-<h1 id="on-call-friendly-pattern-2---logging-acceptable-failures-with-warn-level">On-call-friendly pattern 2 - logging &ldquo;acceptable failures&rdquo; with WARN level</h1>
+<h1 id="2-logging-acceptable-failures-with-warn-level">2. Logging &ldquo;acceptable failures&rdquo; with WARN level</h1>
 <p>Consider the following API call -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">String</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
@@ -81,7 +81,7 @@
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></div><p>Logging these failures as WARN still tracks our API failures while at the same time making it easy to filter them out.</p>
 <p>This example also demonstrates one of my logging heuristics - I always consider an ERROR log worthy of keeping me awake at night. If this is not the case, I will not log it as an ERROR.</p>
-<h1 id="on-call-friendly-pattern-3---avoid-logging-validation-failures-as-errors">On-call-friendly pattern 3 - avoid logging validation failures as errors</h1>
+<h1 id="3-avoid-logging-validation-failures-as-errors">3. Avoid logging validation failures as errors</h1>
 <p>Consider the following code:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SomeController</span> <span class="o">{</span>
