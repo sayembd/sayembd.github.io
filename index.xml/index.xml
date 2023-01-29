@@ -5,7 +5,120 @@
     <link>https://www.sayemahmed.com/</link>
     <description>Recent content on Random Musings</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Mon, 19 Oct 2020 02:38:52 +0200</lastBuildDate><atom:link href="https://www.sayemahmed.com/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 28 Jan 2023 23:12:11 +0200</lastBuildDate><atom:link href="https://www.sayemahmed.com/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>On-call-friendly Java Logging Patterns</title>
+      <link>https://www.sayemahmed.com/posts/debugging-friendly-logging-patterns/</link>
+      <pubDate>Sat, 28 Jan 2023 23:12:11 +0200</pubDate>
+      
+      <guid>https://www.sayemahmed.com/posts/debugging-friendly-logging-patterns/</guid>
+      <description>In this blog post I will talk about a few on-call-friendly logging patterns that have served me well throughout my career.</description>
+      <content:encoded><![CDATA[<h1 id="introduction">Introduction</h1>
+<p>Logging is an essential part of any modern Java application. Logs allow us to understand the runtime behaviour of our applications. They also help us capture the context when errors occur. Without logging debugging a production issue will often be quite tricky. Throughout my career, I have found specific logging patterns more valuable than others when on-call. And some - not so much. In this blog post, I will talk about a few of them with examples.</p>
+<h1 id="context">Context</h1>
+<p>All patterns or anti-patterns always have an associated context. In the following discussion, I assume a high-traffic web application is doing all the logging. By &ldquo;high-traffic&rdquo;, I mean a web application serving at least 30K requests per second.</p>
+<h1 id="on-call-friendly-pattern-1---avoiding-duplicate-error-logs-while-preserving-the-context">On-call-friendly pattern 1 - avoiding duplicate error logs while preserving the context</h1>
+<p>Consider the following code -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">SomeResult</span> <span class="nf">performSomeOperation</span><span class="o">(</span><span class="n">SomeData</span> <span class="n">someData</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">someService</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="n">someData</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">SomeCommonException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Error occurred. Data - {}&#34;</span><span class="o">,</span> <span class="n">someData</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">throw</span> <span class="k">new</span> <span class="n">AnotherCommonException</span><span class="o">(</span><span class="s">&#34;Some error occurred&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>There are two reasons this pattern is not helpful when I am on call. First, it results in unnecessary noise in the production log. In this example, we log an error message immediately after catching the exception. But then we are throwing a new exception - <code>AnotherCommonException</code>. Now the client of &ldquo;performSomeOperation&rdquo; would need to deal with this exception -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">SomeResult</span> <span class="nf">clientOfPerformSomeOperation</span><span class="o">(</span><span class="n">SomeData</span> <span class="n">someData</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">someService</span><span class="o">.</span><span class="na">performSomeOperation</span><span class="o">(</span><span class="n">someData</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">AnotherCommonException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// log it? Throw a new error? Do both?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>In the worst case, each client will log an error message and rethrow the exception. As a result, we will end up with two or more log messages for a single error. If 1% of the incoming requests encounter <code>SomeCommonException</code>, then that would mean six hundred error logs per second being logged, three hundred of which are duplicates. That&rsquo;s a lot of unnecessary error messages! On top of that, a 1% failure is often considered acceptable in a distributed application, in which case logging these &ldquo;acceptable failures&rdquo; might even mislead me to think that this might be the source of an active alert.</p>
+<p>The second reason is that we have no link between the root cause and the follow-up exception. For a high-traffic application, the first and the second log message will be far apart in the production log. And chances of linking them together will be low. As a result, the production log will contain random exceptions without any context, which might also be a source of misdirection for me.</p>
+<p>The on-call-friendlier version of the above example would be -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">SomeResult</span> <span class="nf">performSomeOperation</span><span class="o">(</span><span class="n">SomeData</span> <span class="n">someData</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">someService</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="n">someData</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">SomeCommonException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">throw</span> <span class="k">new</span> <span class="n">AnotherCommonException</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;Error occurred. Data - {}&#34;</span> <span class="o">+</span> <span class="n">someData</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ex</span>
+</span></span><span class="line"><span class="cl">        <span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>This logging does not have the above problems. It does not create duplicate log messages. It also preserves the original error context. Identifying and filtering them out from the log is also relatively easy.</p>
+<p>Having precisely one log message per error has other advantages. It makes it easy to count the exact number of errors at a particular time. If the exception is occurring due to a timed-out API call, then searching the log for <code>ERROR</code> levels within a, say, 30-minute time window will return the exact number of failed API calls within the period.</p>
+<h1 id="on-call-friendly-pattern-2---logging-acceptable-failures-with-warn-level">On-call-friendly pattern 2 - logging &ldquo;acceptable failures&rdquo; with WARN level</h1>
+<p>Consider the following API call -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">String</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">getForEntity</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;https://httpstat.us/500&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span><span class="o">.</span><span class="na">class</span>
+</span></span><span class="line"><span class="cl">        <span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Error occurred&#34;</span><span class="o">,</span> <span class="n">ex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;A default response&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p><a href="https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing">Making remote API calls 100% reliable is practically impossible</a>. And so it&rsquo;s expected that a certain percentage of this call will fail. For our high-traffic web application, a 0.5% failure rate here would mean 150 errors per second. Logging each one as an error would thus generate high-volume noise in the production log.</p>
+<p>Rather than logging it as an error, I would rather recommend logging it as a WARN -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="n">String</span> <span class="nf">get</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">restTemplate</span><span class="o">.</span><span class="na">getForEntity</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;https://httpstat.us/500&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span><span class="o">.</span><span class="na">class</span>
+</span></span><span class="line"><span class="cl">        <span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">log</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;API call failure. Context data should also be logged&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ex</span>
+</span></span><span class="line"><span class="cl">        <span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="s">&#34;A default response&#34;</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Logging these failures as WARN still tracks our API failures while at the same time making it easy to filter them out.</p>
+<p>This example also demonstrates one of my logging heuristics - I always consider an ERROR log worthy of keeping me awake at night. If this is not the case, I will not log it as an ERROR.</p>
+<h1 id="on-call-friendly-pattern-3---avoid-logging-validation-failures-as-errors">On-call-friendly pattern 3 - avoid logging validation failures as errors</h1>
+<p>Consider the following code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SomeController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span> <span class="n">createOrder</span><span class="o">(</span><span class="n">OrderDTO</span> <span class="n">dto</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">var</span> <span class="n">validationResult</span> <span class="o">=</span> <span class="n">validateDto</span><span class="o">(</span><span class="n">dto</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">validationResult</span><span class="o">.</span><span class="na">hasError</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;Validation error: {}&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">validationResult</span><span class="o">.</span><span class="na">toError</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// create order logic
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>Logging a validation error as an error in the log is 100% noise. Validation errors represent an incomplete request; the application cannot process the request in its current form. And so, logging these requests as errors only pollute the log. I recommend removing this logging altogether.</p>
+<p>There is a rare exception to this. Often, clients would ask for a log of a particular request to debug their code. For example, if this API serves mobile apps and there is a logical bug in the validation on the mobile app, then this error logging might be helpful. In that case, we might consider keeping this log but with a different level -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@RestController</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SomeController</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@PostMapping</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span> <span class="n">createOrder</span><span class="o">(</span><span class="n">OrderDTO</span> <span class="n">dto</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">var</span> <span class="n">validationResult</span> <span class="o">=</span> <span class="n">validateDto</span><span class="o">(</span><span class="n">dto</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">validationResult</span><span class="o">.</span><span class="na">hasError</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Validation error: {}&#34;</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">                <span class="n">validationResult</span><span class="o">.</span><span class="na">toError</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">ResponseEntity</span><span class="o">.</span><span class="na">badRequest</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// create order logic
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></div><p>This logging might be acceptable if the web application receives a low traffic volume. For a high-traffic website, this would, however, require a considerable amount of log storage. In such cases, it is always better to rely on <a href="https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/">an observability tool</a> which can perform after-the-fact sampling (sampling 1% of the requests that generate 400).</p>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>How to Build Observable Systems - An Introduction to Observability</title>
       <link>https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/</link>
