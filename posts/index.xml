@@ -14,7 +14,7 @@
       <guid>https://www.sayemahmed.com/posts/my-first-brush-with-go/</guid>
       <description>I have decided to try out Golang. In this post I share my initial experience of setting up relevant tooling and writing my first ever Go script.</description>
       <content:encoded><![CDATA[<p>I have decided to have a go at Go (pun intended!).</p>
-<p>The reasons are less important than the decision itself, so I will not discuss them in this blog. Instead, I have decided to document my journey in several posts (hopefully, more to come!).</p>
+<p>The reasons are less important than the decision itself, so I will not discuss them in this blog. Instead, I will focus on the journey and will document the experience in a series of posts (hopefully, more to come!).</p>
 <p>Anyone who has worked with a programming language professionally knows that learning a programming language involves more than learning syntax. Here is a list of things that I feel I need to learn if I want to be productive in Go (in no particular order) -</p>
 <ol>
 <li>Setting up relevant tools and being comfortable with them</li>
