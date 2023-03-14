@@ -5,7 +5,153 @@
     <link>https://www.sayemahmed.com/posts/</link>
     <description>Recent content in Posts on Random Musings</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Tue, 14 Feb 2023 00:00:00 +0100</lastBuildDate><atom:link href="https://www.sayemahmed.com/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 14 Mar 2023 21:39:58 +0100</lastBuildDate><atom:link href="https://www.sayemahmed.com/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My First Brush With Go</title>
+      <link>https://www.sayemahmed.com/posts/my-first-brush-with-go/</link>
+      <pubDate>Tue, 14 Mar 2023 21:39:58 +0100</pubDate>
+      
+      <guid>https://www.sayemahmed.com/posts/my-first-brush-with-go/</guid>
+      <description>I have decided to try out Golang. In this post I share my initial experience of setting up relevant tooling and writing my first ever Go script.</description>
+      <content:encoded><![CDATA[<p>I have decided to have a go at Go (pun intended!).</p>
+<p>The reasons are less important than the decision itself, so I will not discuss them in this blog. Instead, I have decided to document my journey in several posts (hopefully, more to come!).</p>
+<p>Anyone who has worked with a programming language professionally knows that learning a programming language involves more than learning syntax. Here is a list of things that I feel I need to learn if I want to be productive in Go (in no particular order) -</p>
+<ol>
+<li>Setting up relevant tools and being comfortable with them</li>
+<li>The language syntax</li>
+<li>Language APIs</li>
+<li>3rd party libraries and frameworks</li>
+<li>Debugging in Go</li>
+<li>Compiling and packaging applications with Go</li>
+<li>Set up CI/CD</li>
+<li>Different failure modes and language quarks and learning how to watch out for them</li>
+<li>Monitoring for failures, including learning how to collect metrics</li>
+</ol>
+<p>I am currently at stage 2, trying to learn the language syntax. I expect to jump back and forth between different stages as I continue learning Go.</p>
+<h1 id="installing-go">Installing Go</h1>
+<p>Installing Go on my machine was relatively easy as I am on a Mac. All I had to do was use <code>brew</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">brew install go
+</span></span></code></pre></div><p>I verified my Go installation with:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">go version
+</span></span></code></pre></div><p>which printed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">go version go1.20.1 darwin/arm64
+</span></span></code></pre></div><h1 id="writing-my-first-hello-world-script">Writing my first hello world script</h1>
+<p>Next, it was time to write my first ever hello world in Go. I used Visual Studio Code to create a file named <code>hello.go</code> with the following content -</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// Go organises code in packages! Similar to Java
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// I can import other packages and reuse their code
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// This is how I can define a function in Go
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="s">&#34;Hello World\n&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Now it is time to compile and run the code. I opened up the terminal, navigated to the directory containing the file, and executed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">go run hello.go
+</span></span></code></pre></div><p>The <code>go run</code> command compiled my script, built a native binary, and simultaneously executed it. Which then printed the expected output in the command line:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">Hello World
+</span></span></code></pre></div><p>Success!</p>
+<p>Like Java, Go also has the concept of packages. I am still not fully aware of all the rules and gotchas, but I assume their purpose is similar to Java - they have been designed to group relevant code under a common namespace.</p>
+<p>I also learned that packages could decide to expose functions/variables to other packages. To do that, I have to define a function with a capital letter, and Go automatically assumes that it is intended to be used from other packages. This is why the <code>Print</code> function starts with a capital <code>P</code>.</p>
+<p>Another observation is that if I change my package name to something else, like <code>hellopackage</code>, the code no longer compiles. Instead, I get the following error message:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">package command-line-arguments is not a main package
+</span></span></code></pre></div><p>The package containing the <code>main</code> function must also be named <code>main</code>. This makes me wonder how people organise code in Go. Do they use reversed company domain name to name packages (i.e., <code>com.sayemahmed</code>) and then have only one package named <code>main</code> with only the <code>main</code> function to bootstrap the application? Or do they use something else?</p>
+<h2 id="go-build"><code>go build</code></h2>
+<p><code>go run</code> isn&rsquo;t the only way to build a Go script. We have another command at our disposal - <code>go build</code> - which compiles the script and generates a native executable binary:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">go build -o hello_world hello.go
+</span></span></code></pre></div><p>I used the <code>-o</code> flag to specify a name for the binary file.</p>
+<p>The compilation process reminded me of how I used to compile C/C++ files with <a href="https://gcc.gnu.org/">GCC</a> (<code>gcc hello.c -o hello</code> would be equivalent for a C file). With Java, however, I hardly needed to generate a native binary file (though I could, using GraalVM). Most of the times I have used Maven to build and deploy my web applications.</p>
+<p>What are the differences between <code>go run</code> and <code>go build</code>? The <code>go run</code> command takes either a single file, a list of files, or the name of a package. It then compiles the code and creates a native binary file in a temporary directory, executes the binary, and then deletes it immediately.</p>
+<p>The <code>go build</code> command also takes either a single file, a list of files, or the name of a package. However, it only compiles the code and creates a native binary. We can use the <code>-o</code> flag with this command to set the name of the compiled binary.</p>
+<h1 id="built-in-tools">Built-in tools</h1>
+<p>Besides the compiler, Go comes with many helpful tools with default installation. One such tool is <code>go fmt</code> which reformats code based on official standards. I was pleased to find out Go has an officially recommended formatting which is enforced during compile time! Ha! No more fighting over tabs vs spaces!!</p>
+<p>The reason Go comes with standardised formatting seems to be easier tooling support. People claim that it makes it easy to write tools that manipulate Go source code, which makes it easy to write code generation tools. Nice.</p>
+<p>Similar to a formatter, Go installation also includes a linter, a dependency manager, and a test runner. I have yet to try them out.</p>
+<h1 id="my-first-real-script">My first real script</h1>
+<p>A few weeks ago, I needed to prepare a report. The report contained some information I collected over the last year. It was a ~500 lines file, and I wanted to check it had no duplicates before submitting it. I wrote a Go script to automate the process. The entire script is given below:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;bufio&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;os&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;strings&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// First argument is the full path to the binary when
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// executed with `go run`
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Usage: &lt;exeutable&gt; &lt;full-path&gt;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fileName</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">readFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">fileName</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Error while trying to open file&#34;</span><span class="p">,</span> <span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fileScanner</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nf">NewScanner</span><span class="p">(</span><span class="nx">readFile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fileScanner</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">ScanLines</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// https://stackoverflow.com/a/34020023
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="nx">set</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// https://dave.cheney.net/2014/03/25/the-empty-struct
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">var</span> <span class="nx">empty</span> <span class="kd">struct</span><span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="nx">fileScanner</span><span class="p">.</span><span class="nf">Scan</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">line</span> <span class="o">:=</span> <span class="nx">strings</span><span class="p">.</span><span class="nf">TrimSpace</span><span class="p">(</span><span class="nx">fileScanner</span><span class="p">.</span><span class="nf">Text</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">line</span> <span class="o">==</span> <span class="s">&#34;&#34;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">continue</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_</span><span class="p">,</span> <span class="nx">found</span> <span class="o">:=</span> <span class="nx">set</span><span class="p">[</span><span class="nx">line</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="nx">found</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Duplicate exists: &#34;</span><span class="p">,</span> <span class="nx">line</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">set</span><span class="p">[</span><span class="nx">line</span><span class="p">]</span> <span class="p">=</span> <span class="nx">empty</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">readFile</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>I invoked the script as follows:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">go run my-script.go ~/Documents/my-report.md
+</span></span></code></pre></div><p>Which then displayed all the duplicate lines in <code>my-report.md</code> file.</p>
+<p>I first learned how to pass command line arguments to a Go script. To do that, I needed to import the built-in <code>os</code> package and use it&rsquo;s <code>Args</code> array. It looks like arrays in Go work similarly to Java and C - zero-based and indexed using <code>[]</code>. The first element contains the executable&rsquo;s name (in my case, it was something like <code>/var/folders/mr/k_b0wtwd11q66p3z3787w9082200gq/T/go-build907299260/b001/exe/my-script</code>). Starting from the second element, we can access any passed-in arguments. The script expects the file name, which should be checked for duplicates, so we access the file name at index 1.</p>
+<p>Next, I learned that to find the length of an array, I need to use the built-in <code>len</code> function. This is similar to how the <a href="https://www.programiz.com/python-programming/methods/built-in/len">len function in Python works</a>.</p>
+<p>The line:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">fileName</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+</span></span></code></pre></div><p>declares and simultaneously initialises a variable named <code>fileName</code> with the name of our file. Go seems to allow a couple of ways to declare variables - one using <code>var</code> and the other without it. The above line for example could have also been written as:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="c1">// Declare the variable first, with explicit type
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">var</span> <span class="nx">fileScanner</span> <span class="o">*</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">Scanner</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Initialise the variable
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="nx">fileScanner</span> <span class="p">=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nf">NewScanner</span><span class="p">(</span><span class="nx">readFile</span><span class="p">)</span>
+</span></span></code></pre></div><p>There are some differences between the two approaches. For example, we can only use <code>:=</code> within a function. It can also infer the variable type automatically as we are required to specify a value immediately.</p>
+<p>On the other hand, we can use <code>=</code> outside a function as well. It also cannot infer the type of a variable automatically.</p>
+<p>When I saw the <code>*</code> in the type, I started thinking - <code>does Go have explicit pointers like C</code>? <a href="https://go.dev/tour/moretypes/1#:~:text=Go%20has%20pointers.,Its%20zero%20value%20is%20nil%20.">And it seems it does</a>! That means caring about <a href="https://en.wikipedia.org/wiki/Dangling_pointer">Dangling Pointers</a> and SegFaults and memory safety and all that!</p>
+<p>The following line opens the file for reading:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">readFile</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="nx">fileName</span><span class="p">)</span>
+</span></span></code></pre></div><p>I didn&rsquo;t specify file open (i.e., read-write/append only/read-only) mode when calling <code>Open</code>, but I assume there must be a way to do it.</p>
+<p>One interesting thing to note is how I used two variables to store the return values from <code>Open</code>. It looks similar to how Python can return multiple values from a method (which it converts into a Tuple). I am not 100% sure whether something similar is happening here. <a href="https://gobyexample.com/multiple-return-values">The Go by Example site mentions multiple return values</a>, but it doesn&rsquo;t explain how it actually works under the hood.</p>
+<p>Also, after looking at some examples, it seems many functions in Go often return a couple of return values, especially the ones that do some I/O or have a chance of running into errors/issues. In Java, we used to throw exceptions when an I/O failed, but in Go, the convention is to return a second value describing the error.</p>
+<p>The following two lines:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">fileScanner</span> <span class="o">:=</span> <span class="nx">bufio</span><span class="p">.</span><span class="nf">NewScanner</span><span class="p">(</span><span class="nx">readFile</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fileScanner</span><span class="p">.</span><span class="nf">Split</span><span class="p">(</span><span class="nx">bufio</span><span class="p">.</span><span class="nx">ScanLines</span><span class="p">)</span>
+</span></span></code></pre></div><p>instantiates and configures something like a <a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/Scanner.html">Scanner</a> to read the file line by line.</p>
+<p>My initial idea was to create a <a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/Set.html">Set</a> where I store the lines after reading from the file. Then, if I ever find another matching line by doing a simple <a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/Set.html#contains(java.lang.Object)">contains</a> check, I have found a duplicate. While trying to translate this idea into Go code, I discovered that it does not have any built-in Set type. It does have a <a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/Map.html">Map</a>, and the recommendation was to use it to simulate a Set, which I did:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">set</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kd">struct</span><span class="p">{})</span>
+</span></span></code></pre></div><p>I also came across <code>empty</code> struct. It seems Go does not have anything that looks like a Java class, but it does have <a href="https://en.wikipedia.org/wiki/Struct_(C_programming_language)">Structures like in C</a>. An empty <code>struct</code> is a special kind of structure in that it does not occupy any memory. And so, simulating a Set of strings with a Map of String to empty struct was the most space-efficient way.</p>
+<p>The next few lines are relatively easy to understand - we stream through the lines in the files and check for duplicates. The interesting bit here is the line:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">_</span><span class="p">,</span> <span class="nx">found</span> <span class="o">:=</span> <span class="nx">set</span><span class="p">[</span><span class="nx">line</span><span class="p">]</span>
+</span></span></code></pre></div><p>which shows that, like some programming languages <a href="https://www.baeldung.com/scala/underscore#ignoring-things">i.e., Scala</a> Go also supports <code>_</code> as a way to ignore values when we don&rsquo;t care about them.</p>
+<h1 id="final-thoughts">Final thoughts</h1>
+<p>After writing my first script, my first impression was that Go is between C and Java. It has pointers like in C, and it has packages like Java. Its similarity to C might be why people often say that Go applications have less resource footprint. On the other hand, I wonder if Go has something like a <a href="https://spring.io/">Spring-framework</a>, which removes a lot of boilerplate for anyone developing applications in Java.</p>
+<p>But all in all, I like my initial brush with Go.</p>
+]]></content:encoded>
+    </item>
+    
     <item>
       <title>Unwinding the Abstraction - How does ArrayList in Java Work?</title>
       <link>https://www.sayemahmed.com/posts/unwinding-the-abstraction-how-does-arraylist-in-java-work/</link>
@@ -29,14 +175,14 @@
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></div><p><a href="https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/List.html">The official doc</a> says that List implementations should support holding an arbitrary number of elements. However, we need to specify a size when creating the array. If we specify a large size, then we might waste memory. However, setting a shorter length puts a limitation on our capacity. So what do we do?</p>
 <p>One way to get around this limitation is to create an array with a small capacity first and then resize it whenever we run out of space. Let&rsquo;s go ahead and declare a 1-element array -</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">elements</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">1</span><span class="o">];</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">elements</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="mi">1</span><span class="o">];</span>
 </span></span></code></pre></div><p>We could also consider passing the size during construction if we have a rough idea of how many elements we will store in this list. This would help us to initialise the array more efficiently as we would need less resizing. We could provide another constructor which would accept an <code>initialCapacity</code> as an argument and use it to initialise the array -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CustomArrayList</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="n">Object</span><span class="o">[]</span> <span class="n">elements</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="nf">CustomArrayList</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="nf">CustomArrayList</span><span class="o">(</span><span class="kt">int</span> <span class="n">initialCapacity</span><span class="o">)</span> <span class="o">{</span>
@@ -72,8 +218,8 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">add</span><span class="o">(</span><span class="n">E</span> <span class="n">element</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">nextIndex</span> <span class="o">==</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">+</span> <span class="n">1</span><span class="o">];</span>
-</span></span><span class="line"><span class="cl">      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">        <span class="n">copy</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">      <span class="o">}</span>
 </span></span><span class="line"><span class="cl">      <span class="n">elements</span> <span class="o">=</span> <span class="n">copy</span><span class="o">;</span>
@@ -89,8 +235,8 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">add</span><span class="o">(</span><span class="n">E</span> <span class="n">element</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">nextIndex</span> <span class="o">==</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="n">2</span><span class="o">];</span>
-</span></span><span class="line"><span class="cl">      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="mi">2</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">      <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">        <span class="n">copy</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">      <span class="o">}</span>
 </span></span><span class="line"><span class="cl">      <span class="n">elements</span> <span class="o">=</span> <span class="n">copy</span><span class="o">;</span>
@@ -107,8 +253,8 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">add</span><span class="o">(</span><span class="n">E</span> <span class="n">element</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">nextIndex</span> <span class="o">==</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="n">2</span><span class="o">];</span>
-</span></span><span class="line"><span class="cl">      <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">copy</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">nextIndex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="mi">2</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">      <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">copy</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">nextIndex</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">      <span class="n">elements</span> <span class="o">=</span> <span class="n">copy</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
 </span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">;</span>
@@ -133,7 +279,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
@@ -146,12 +292,12 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">nextIndex</span><span class="o">--;</span>
 </span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
@@ -166,12 +312,12 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">nextIndex</span><span class="o">--;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">E</span> <span class="n">elementBeingRemoved</span> <span class="o">=</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
@@ -185,12 +331,12 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">==</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">nextIndex</span><span class="o">--;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">E</span> <span class="n">elementBeingRemoved</span> <span class="o">=</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
@@ -199,7 +345,7 @@
 </span></span><span class="line"><span class="cl">  <span class="n">E</span> <span class="n">elementBeingRemoved</span> <span class="o">=</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="n">nextIndex</span><span class="o">--;</span>
 </span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">elementBeingRemoved</span><span class="o">;</span>
@@ -211,7 +357,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
@@ -219,7 +365,7 @@
 </span></span><span class="line"><span class="cl">  <span class="n">E</span> <span class="n">elementBeingRemoved</span> <span class="o">=</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="n">nextIndex</span><span class="o">--;</span>
 </span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">1</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">elements</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">elementBeingRemoved</span><span class="o">;</span>
@@ -237,14 +383,14 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Specification: if the index is out of bound, then throw
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * IndexOutOfBoundsException.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="n">E</span> <span class="n">elementBeingRemoved</span> <span class="o">=</span> <span class="o">(</span><span class="n">E</span><span class="o">)</span> <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">];</span>
 </span></span><span class="line"><span class="cl">  <span class="n">nextIndex</span><span class="o">--;</span>
-</span></span><span class="line"><span class="cl">  <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span>
+</span></span><span class="line"><span class="cl">  <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span>
 </span></span><span class="line"><span class="cl">      <span class="n">elements</span><span class="o">,</span> <span class="n">index</span><span class="o">,</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">index</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="n">elements</span><span class="o">[</span><span class="n">nextIndex</span><span class="o">]</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">elementBeingRemoved</span><span class="o">;</span>
@@ -260,7 +406,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Notice the difference with the index check of the
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * `remove` method.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
@@ -288,7 +434,7 @@
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * Notice the difference with the index check of the
 </span></span></span><span class="line"><span class="cl"><span class="cm">   * `remove` method.
 </span></span></span><span class="line"><span class="cl"><span class="cm">   */</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="n">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">index</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">index</span> <span class="o">&gt;</span> <span class="n">nextIndex</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IndexOutOfBoundsException</span><span class="o">(</span>
 </span></span><span class="line"><span class="cl">      <span class="s">&#34;index &#34;</span> <span class="o">+</span> <span class="n">index</span> <span class="o">+</span> <span class="s">&#34; is out of range&#34;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">);</span>
@@ -302,15 +448,15 @@
 </span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">nextIndex</span> <span class="o">==</span> <span class="n">elements</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="n">2</span><span class="o">];</span>
-</span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">copy</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">index</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Object</span><span class="o">[]</span> <span class="n">copy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">[</span><span class="n">nextIndex</span> <span class="o">*</span> <span class="mi">2</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">copy</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">index</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">copy</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">index</span><span class="o">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">copy</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">index</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">copy</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">index</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">elements</span> <span class="o">=</span> <span class="n">copy</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">System</span><span class="o">.</span><span class="na">arraycopy</span><span class="o">(</span><span class="n">elements</span><span class="o">,</span> <span class="n">index</span><span class="o">,</span>
-</span></span><span class="line"><span class="cl">        <span class="n">elements</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">index</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">elements</span><span class="o">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">nextIndex</span> <span class="o">-</span> <span class="n">index</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">elements</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">element</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="n">nextIndex</span><span class="o">++;</span>
@@ -319,7 +465,7 @@
 <p>This implementation is relatively straightforward. We do a linear scan through the <code>elements</code> array from left to right, checking for object equality to see if the given element exists in the array:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">contains</span><span class="o">(</span><span class="n">Object</span> <span class="n">element</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="n">element</span><span class="o">))</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
@@ -338,7 +484,7 @@
 <p>We can leverage the existing <code>remove(index)</code> method to implement removal by element. To do that, we do a linear scan of our <code>elements</code> array, find the index of the element, and then call <code>remove(index)</code>:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">remove</span><span class="o">(</span><span class="n">Object</span> <span class="n">element</span><span class="o">)</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">nextIndex</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">elements</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="n">element</span><span class="o">))</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="n">remove</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
@@ -352,7 +498,7 @@
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">private</span> <span class="kd">class</span> <span class="nc">CustomArrayListIterator</span> <span class="kd">implements</span> <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">CustomArrayList</span><span class="o">.</span><span class="na">this</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@Override</span>
 </span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">hasNext</span><span class="o">()</span> <span class="o">{</span>
@@ -1054,7 +1200,7 @@ Then add new account fails</p>
 <p>Let&rsquo;s modify our service now to make the failing test pass -</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">addNewAccount</span><span class="o">(</span><span class="n">AddNewAccountCommand</span> <span class="n">command</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">  <span class="n">BigDecimal</span> <span class="n">initialBalance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BigDecimal</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">getInitialBalance</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">initialBalance</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">if</span> <span class="o">(</span><span class="n">initialBalance</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Initial balance of an account cannot be negative&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="n">saveAccountPort</span><span class="o">.</span><span class="na">saveAccount</span><span class="o">(</span>
@@ -1227,7 +1373,7 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="kt">void</span> <span class="nf">addNewAccount</span><span class="o">(</span><span class="n">AddNewAccountCommand</span> <span class="n">command</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">BigDecimal</span> <span class="n">initialBalance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BigDecimal</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">getInitialBalance</span><span class="o">());</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">initialBalance</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">initialBalance</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">BigDecimal</span><span class="o">.</span><span class="na">ZERO</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Initial balance of an account cannot be negative&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">findAccountPort</span><span class="o">.</span><span class="na">findAccountByName</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">getAccountName</span><span class="o">())</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
@@ -1373,14 +1519,14 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">  <span class="kd">protected</span> <span class="n">Integer</span> <span class="nf">compute</span><span class="o">()</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">listToSum</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Found empty list, sum is 0&#34;</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="mi">0</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middleIndex</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="n">2</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middleIndex</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;List {}, middle Index: {}&#34;</span><span class="o">,</span> <span class="n">listToSum</span><span class="o">,</span> <span class="n">middleIndex</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">leftSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">0</span><span class="o">,</span> <span class="n">middleIndex</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">rightSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middleIndex</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">leftSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">middleIndex</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">rightSublist</span> <span class="o">=</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middleIndex</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">listToSum</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">leftSummer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">leftSublist</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">rightSummer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">rightSublist</span><span class="o">);</span>
@@ -1423,26 +1569,26 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
 </span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldSumListWithOneElement</span><span class="o">()</span> <span class="o">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="n">5</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="mi">5</span><span class="o">));</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">forkJoinPool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">    <span class="n">forkJoinPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">summer</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">summer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">5</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="mi">5</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
 </span></span><span class="line"><span class="cl">  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldSumListWithMultipleElements</span><span class="o">()</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ListSummer</span> <span class="n">summer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ListSummer</span><span class="o">(</span><span class="n">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
-</span></span><span class="line"><span class="cl">        <span class="n">1</span><span class="o">,</span> <span class="n">2</span><span class="o">,</span> <span class="n">3</span><span class="o">,</span> <span class="n">4</span><span class="o">,</span> <span class="n">5</span><span class="o">,</span> <span class="n">6</span><span class="o">,</span> <span class="n">7</span><span class="o">,</span> <span class="n">8</span><span class="o">,</span> <span class="n">9</span>
+</span></span><span class="line"><span class="cl">        <span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">8</span><span class="o">,</span> <span class="mi">9</span>
 </span></span><span class="line"><span class="cl">    <span class="o">));</span>
 </span></span><span class="line"><span class="cl">    <span class="n">ForkJoinPool</span> <span class="n">forkJoinPool</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ForkJoinPool</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">    <span class="n">forkJoinPool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">summer</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">summer</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="n">45</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">).</span><span class="na">isEqualTo</span><span class="o">(</span><span class="mi">45</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></div><p>In the test, we create an instance of the <a href="https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/concurrent/ForkJoinPool.html">ForkJoinPool</a>. A ForkJoinPool is a unique ExecutorService implementation for running ForkJoinTasks. It employs a special algorithm known as the work-stealing algorithm. Contrary to the other ExecutorService implementations where there is only a single queue holding all the tasks to be executed, in a work-stealing implementation, each worker thread gets its work queue. Each thread starts executing tasks from their queue. When we detect that a ForkJoinTask can be broken down into multiple smaller subtasks, we do break them into smaller tasks, and then we invoke the fork() method on those tasks. This invocation causes the subtasks to be pushed into the executing thread&rsquo;s queue. During the execution, when one thread exhausts its queue/has no tasks to execute, it can &ldquo;steal&rdquo; tasks from other thread&rsquo;s queue (hence the name &ldquo;work-stealing&rdquo;). This stealing behaviour is what results in a better throughput than using any other ExecutorService implementations.</p>
@@ -1466,10 +1612,10 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">      <span class="k">return</span> <span class="n">Collections</span><span class="o">.</span><span class="na">emptyMap</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
 </span></span><span class="line"><span class="cl">
-</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middle</span> <span class="o">=</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="n">2</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">middle</span> <span class="o">=</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">/</span> <span class="mi">2</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Middle index: {}&#34;</span><span class="o">,</span> <span class="n">links</span><span class="o">,</span> <span class="n">middle</span><span class="o">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">leftPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">0</span><span class="o">,</span> <span class="n">middle</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">rightPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middle</span> <span class="o">+</span> <span class="n">1</span><span class="o">,</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">leftPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">middle</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ResponseLengthCalculator</span> <span class="n">rightPartition</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ResponseLengthCalculator</span><span class="o">(</span><span class="n">links</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">middle</span> <span class="o">+</span> <span class="mi">1</span><span class="o">,</span> <span class="n">links</span><span class="o">.</span><span class="na">size</span><span class="o">()));</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="n">log</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;Forking left partition&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="n">leftPartition</span><span class="o">.</span><span class="na">fork</span><span class="o">();</span>
@@ -1562,9 +1708,9 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">responseLengthCalculator</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="n">1</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
 </span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">containsKeys</span><span class="o">(</span><span class="s">&#34;http://httpstat.us/200&#34;</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">containsValue</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">containsValue</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@Test</span>
@@ -1581,7 +1727,7 @@ For the same reason as above, we have also moved our @DisplayName annotation fro
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">responseLengthCalculator</span><span class="o">.</span><span class="na">join</span><span class="o">();</span>
 </span></span><span class="line"><span class="cl">    <span class="n">assertThat</span><span class="o">(</span><span class="n">result</span><span class="o">)</span>
-</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="n">4</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">hasSize</span><span class="o">(</span><span class="mi">4</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></div><p>That&rsquo;s it for today, folks! As always, any feedback/improvement suggestions/comments are highly appreciated!</p>
@@ -1891,7 +2037,7 @@ To improve the performance, all I did was -</p>
 </span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="n">String</span> <span class="n">customerId</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@NotNull</span>
-</span></span><span class="line"><span class="cl">  <span class="nd">@Size</span><span class="o">(</span><span class="n">min</span> <span class="o">=</span> <span class="n">1</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">  <span class="nd">@Size</span><span class="o">(</span><span class="n">min</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span>
 </span></span><span class="line"><span class="cl">  <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">OrderItem</span><span class="o">&gt;</span> <span class="n">orderItems</span><span class="o">;</span>
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">  <span class="nd">@Getter</span>
@@ -1947,7 +2093,7 @@ To improve the performance, all I did was -</p>
 </span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Quantity must be given&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given quantity &#34;</span>
 </span></span><span class="line"><span class="cl">          <span class="o">+</span> <span class="n">orderItem</span><span class="o">.</span><span class="na">getQuantity</span><span class="o">()</span>
 </span></span><span class="line"><span class="cl">          <span class="o">+</span> <span class="s">&#34; is not valid.&#34;</span><span class="o">);</span>
@@ -2017,7 +2163,7 @@ To improve the performance, all I did was -</p>
 </span></span><span class="line"><span class="cl">    <span class="n">Integer</span> <span class="n">quantity</span> <span class="o">=</span> <span class="n">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">orderItem</span><span class="o">)</span>
 </span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">OrderItem</span><span class="o">::</span><span class="n">getQuantity</span><span class="o">)</span>
 </span></span><span class="line"><span class="cl">        <span class="o">.</span><span class="na">orElseThrow</span><span class="o">(()</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Quantity must be given&#34;</span><span class="o">));</span>
-</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">quantity</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="n">quantity</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
 </span></span><span class="line"><span class="cl">      <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">(</span><span class="s">&#34;Given quantity &#34;</span> <span class="o">+</span> <span class="n">quantity</span> <span class="o">+</span> <span class="s">&#34; is not valid.&#34;</span><span class="o">);</span>
 </span></span><span class="line"><span class="cl">    <span class="o">}</span>
 </span></span><span class="line"><span class="cl">  <span class="o">}</span>
