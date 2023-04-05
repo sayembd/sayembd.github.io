@@ -20,6 +20,7 @@
 <li>Setting up relevant tools and being comfortable with them</li>
 <li>The language syntax</li>
 <li>Language APIs</li>
+<li>Writing tests</li>
 <li>3rd party libraries and frameworks</li>
 <li>Debugging in Go</li>
 <li>Compiling and packaging applications with Go</li>
