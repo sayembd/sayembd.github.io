@@ -1,27 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Posts on Random Musings</title>
     <link>https://www.sayemahmed.com/posts/</link>
     <description>Recent content in Posts on Random Musings</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo -- 0.152.2</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 14 Mar 2023 21:39:58 +0100</lastBuildDate>
+    <lastBuildDate>Sat, 28 Jan 2023 23:12:11 +0200</lastBuildDate>
     <atom:link href="https://www.sayemahmed.com/posts/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>My First Brush With Go</title>
-      <link>https://www.sayemahmed.com/posts/my-first-brush-with-go/</link>
-      <pubDate>Tue, 14 Mar 2023 21:39:58 +0100</pubDate>
-      <guid>https://www.sayemahmed.com/posts/my-first-brush-with-go/</guid>
-      <description>I have decided to try out Golang. In this post I share my initial experience of setting up relevant tooling and writing my first ever Go script.</description>
-    </item>
-    <item>
-      <title>Unwinding the Abstraction - How does ArrayList in Java Work?</title>
-      <link>https://www.sayemahmed.com/posts/unwinding-the-abstraction-how-does-arraylist-in-java-work/</link>
-      <pubDate>Tue, 14 Feb 2023 00:00:00 +0100</pubDate>
-      <guid>https://www.sayemahmed.com/posts/unwinding-the-abstraction-how-does-arraylist-in-java-work/</guid>
-      <description>In this article, we will implement a custom ArrayList from scratch to understand how they work under the hood and what their best and worst use cases are.</description>
-    </item>
     <item>
       <title>On-call-friendly Java Logging Patterns</title>
       <link>https://www.sayemahmed.com/posts/debugging-friendly-logging-patterns/</link>
