@@ -1,19 +1,262 @@
-<!doctype html><html lang=en dir=auto data-theme=light><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Posts | Random Musings</title><meta name=keywords content><meta name=description content="Posts - Random Musings"><meta name=author content><link rel=canonical href=https://www.sayemahmed.com/posts/><link crossorigin=anonymous href=/assets/css/stylesheet.fef82c1d4c822a0b84353b8886e0a86c46aa384d60bc15570a63725a509d4909.css integrity="sha256-/vgsHUyCKguENTuIhuCobEaqOE1gvBVXCmNyWlCdSQk=" rel="preload stylesheet" as=style><link rel=icon href=https://www.sayemahmed.com/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://www.sayemahmed.com/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://www.sayemahmed.com/favicon-32x32.png><link rel=apple-touch-icon href=https://www.sayemahmed.com/apple-touch-icon.png><link rel=mask-icon href=https://www.sayemahmed.com/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate type=application/rss+xml href=https://www.sayemahmed.com/posts/index.xml title=rss><link rel=alternate hreflang=en href=https://www.sayemahmed.com/posts/><noscript><style>#theme-toggle,.top-link{display:none}</style></noscript><script>localStorage.getItem("pref-theme")==="dark"&&(document.querySelector("html").dataset.theme="dark")</script><meta property="og:url" content="https://www.sayemahmed.com/posts/"><meta property="og:site_name" content="Random Musings"><meta property="og:title" content="Posts"><meta property="og:description" content="Tutorials and articles on Java, Clean Code, Distributed Systems, Microservices, Observability"><meta property="og:locale" content="en"><meta property="og:type" content="website"><meta name=twitter:card content="summary"><meta name=twitter:title content="Posts"><meta name=twitter:description content="Tutorials and articles on Java, Clean Code, Distributed Systems, Microservices, Observability"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://www.sayemahmed.com/posts/"}]}</script></head><body class=list id=top><header class=header><nav class=nav><div class=logo><a href=https://www.sayemahmed.com/ accesskey=h title="Random Musings (Alt + H)">Random Musings</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
-<svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-<svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=https://www.sayemahmed.com/about-me title="About Me"><span>About Me</span></a></li><li><a href=https://www.sayemahmed.com/index.xml title=RSS><span>RSS</span></a></li></ul></nav></header><main class=main><header class=page-header><h1>Posts
-<a href=/posts/index.xml title=RSS aria-label=RSS><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" height="23"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg></a></h1></header><article class=post-entry><header class=entry-header><h2 class=entry-hint-parent>Different States of Java Threads</h2></header><div class=entry-content><p>Introduction In Java, threads can have States. The Thread.State enum defines the different states that a Java thread can have. This enum defines the following values -
-NEW RUNNABLE BLOCKED WAITING TIMED_WAITING TERMINATED In the subsequent sections I will provide a brief overview of these states along with possible transitions between them.
-States of a Java Thread NEW This is the default state a thread gets when it is first created.
-RUNNABLE As soon as a thread starts executing, it moves to the RUNNABLE state.
-...</p></div><footer class=entry-footer><span title='2019-01-14 02:38:52 +0200 +0200'>January 14, 2019</span></footer><a class=entry-link aria-label="post link to Different States of Java Threads" href=https://www.sayemahmed.com/posts/different-states-of-java-threads/></a></article><article class=post-entry><header class=entry-header><h2 class=entry-hint-parent>A Brief Overview of the Fork Join Framework in Java</h2></header><div class=entry-content><p>Introduction The Fork/Join framework is a framework to solve a problem using a concurrent divide-and-conquer approach. They were introduced to complement the existing concurrency API. Before their introduction, the existing ExecutorService implementations were the popular choice to run asynchronous tasks, but they work best when the tasks are homogenous and independent. Running dependent tasks and combining their results using those implementations were not easy. With the introduction of the Fork/Join framework, an attempt was made to address this shortcoming. In this post, we will take a brief look at the API and solve a couple of simple problems to understand how they work.
-...</p></div><footer class=entry-footer><span title='2018-12-16 22:17:05 +0200 +0200'>December 16, 2018</span></footer><a class=entry-link aria-label="post link to A Brief Overview of the Fork Join Framework in Java" href=https://www.sayemahmed.com/posts/a-brief-overview-of-the-fork-join-framework-in-java/></a></article><article class=post-entry><header class=entry-header><h2 class=entry-hint-parent>Java Tips: Creating a Monitoring-friendly ExecutorService</h2></header><div class=entry-content><p>In this article we will be extending an ExecutorService implementation with monitoring capabilities. This monitoring capability will help us to measure a number of pool parameters i.e., active threads, work queue size etc. in a live production environment. It will also enable us to measure task execution time, successful tasks count, and failed tasks count.
-Monitoring Library As for the monitoring library we will be using Metrics. For the sake of simplicity we will be using a ConsoleReporter which will report our metrics to the console. For production-grade applications, we should use an advanced reporter (i.e., Graphite reporter). If you are unfamiliar with Metrics, then I recommend you to go through the getting started guide.
-...</p></div><footer class=entry-footer><span title='2018-05-01 03:15:21 +0200 CEST'>May 1, 2018</span></footer><a class=entry-link aria-label="post link to Java Tips: Creating a Monitoring-friendly ExecutorService" href=https://www.sayemahmed.com/posts/java-tips-creating-a-monitoring-friendly-executorservice/></a></article><article class=post-entry><header class=entry-header><h2 class=entry-hint-parent>Jpa Tips: Avoiding the N + 1 Select Problem</h2></header><div class=entry-content><p>Introduction ORM frameworks like JPA simplifies our development process by helping us to avoid lots of boilerplate code during the object &lt;-> relational data mapping. However, they also bring some additional problems to the table, and N + 1 is one of them. In this article we will take a short look at the problem along with some ways to avoid them.
-The Problem As an example I will use a simplified version of an online book ordering application. In such application I might create an entity like below to represent a Purchase Order -
-...</p></div><footer class=entry-footer><span title='2018-04-22 18:21:11 +0200 CEST'>April 22, 2018</span></footer><a class=entry-link aria-label="post link to Jpa Tips: Avoiding the N + 1 Select Problem" href=https://www.sayemahmed.com/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/></a></article><article class=post-entry><header class=entry-header><h2 class=entry-hint-parent>Clean Code From the Trenches Validation</h2></header><div class=entry-content><p>Let’s directly start with an example. Consider a simple web service which allows clients to place order to a shop. A very simplified version of the order controller could look something like below -
-@RestController @RequestMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE) public class OrderController { private final OrderService orderService; public OrderController(OrderService orderService) { this.orderService = orderService; } @PostMapping public void doSomething(@Valid @RequestBody OrderDTO order) { orderService.createOrder(order); } } And the corresponding DTO class -
-...</p></div><footer class=entry-footer><span title='2017-05-12 00:50:12 +0200 CEST'>May 12, 2017</span></footer><a class=entry-link aria-label="post link to Clean Code From the Trenches Validation" href=https://www.sayemahmed.com/posts/clean-code-from-the-trenches-validation/></a></article><footer class=page-footer><nav class=pagination><a class=prev href=https://www.sayemahmed.com/posts/>«&nbsp;Prev&nbsp;</a></nav></footer></main><footer class=footer><span>&copy; 2025 <a href=https://www.sayemahmed.com/>Random Musings</a></span> ·
-<span>Powered by
-<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
-<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentColor"><path d="M12 6H0l6-6z"/></svg>
-</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>
+  Posts · Random Musings
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="MD Sayem Ahmed">
+<meta name="description" content="Yet another blog about Software Engineering">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Posts">
+  <meta name="twitter:description" content="Yet another blog about Software Engineering">
+
+<meta property="og:url" content="https://www.sayemahmed.com/posts/">
+  <meta property="og:site_name" content="Random Musings">
+  <meta property="og:title" content="Posts">
+  <meta property="og:description" content="Yet another blog about Software Engineering">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="website">
+
+
+
+
+<link rel="canonical" href="https://www.sayemahmed.com/posts/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.4b392a85107b91dbdabc528edf014a6ab1a30cd44cafcd5325c8efe796794fca.css" integrity="sha256-SzkqhRB7kdvavFKO3wFKarGjDNRMr81TJcjv55Z5T8o=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+<link rel="alternate" type="application/rss+xml" href="/posts/index.xml" title="Random Musings" />
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-auto">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://www.sayemahmed.com/">
+      Random Musings
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/about/">About</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container list">
+    <header>
+      <h1 class="title">
+        <a class="title-link" href="https://www.sayemahmed.com/posts/">
+          Posts
+        </a>
+      </h1>
+    </header>
+    
+    <ul><li>
+  <span class="date">May 1, 2018</span>
+  <a class="title" href="/posts/java-tips-creating-a-monitoring-friendly-executorservice/">Java Tips: Creating a Monitoring-friendly ExecutorService</a>
+</li>
+<li>
+  <span class="date">April 22, 2018</span>
+  <a class="title" href="/posts/jpa-tips-avoiding-the-n-plus-1-select-problem/">Jpa Tips: Avoiding the N &#43; 1 Select Problem</a>
+</li>
+<li>
+  <span class="date">May 12, 2017</span>
+  <a class="title" href="/posts/clean-code-from-the-trenches-validation/">Clean Code From the Trenches Validation</a>
+</li>
+</ul>
+
+    
+
+
+
+
+
+<ul class="pagination">
+  
+    
+    <li><a href="/posts/">&laquo;</a></li>
+    
+    <li class="hidden"><a href="/posts/">&lsaquo;</a></li>
+  
+  
+    
+    
+      
+    
+    
+      
+      <li><a href="/posts/">1</a></li>
+      
+    
+  
+    
+    
+      
+    
+    
+      
+      <li>2</li>
+      
+    
+  
+  
+</ul>
+
+
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+      2017 -
+    
+    2025
+     MD Sayem Ahmed 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

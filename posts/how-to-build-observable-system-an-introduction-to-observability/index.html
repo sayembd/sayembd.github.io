@@ -1,13 +1,456 @@
-<!doctype html><html lang=en dir=auto data-theme=light><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>How to Build Observable Systems - An Introduction to Observability | Random Musings</title><meta name=keywords content><meta name=description content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way."><meta name=author content><link rel=canonical href=https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/><link crossorigin=anonymous href=/assets/css/stylesheet.fef82c1d4c822a0b84353b8886e0a86c46aa384d60bc15570a63725a509d4909.css integrity="sha256-/vgsHUyCKguENTuIhuCobEaqOE1gvBVXCmNyWlCdSQk=" rel="preload stylesheet" as=style><link rel=icon href=https://www.sayemahmed.com/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://www.sayemahmed.com/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://www.sayemahmed.com/favicon-32x32.png><link rel=apple-touch-icon href=https://www.sayemahmed.com/apple-touch-icon.png><link rel=mask-icon href=https://www.sayemahmed.com/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/><noscript><style>#theme-toggle,.top-link{display:none}</style></noscript><script>localStorage.getItem("pref-theme")==="dark"&&(document.querySelector("html").dataset.theme="dark")</script><meta property="og:url" content="https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/"><meta property="og:site_name" content="Random Musings"><meta property="og:title" content="How to Build Observable Systems - An Introduction to Observability"><meta property="og:description" content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way."><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2020-10-19T02:38:52+02:00"><meta property="article:modified_time" content="2020-10-19T02:38:52+02:00"><meta name=twitter:card content="summary"><meta name=twitter:title content="How to Build Observable Systems - An Introduction to Observability"><meta name=twitter:description content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way."><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://www.sayemahmed.com/posts/"},{"@type":"ListItem","position":2,"name":"How to Build Observable Systems - An Introduction to Observability","item":"https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"How to Build Observable Systems - An Introduction to Observability","name":"How to Build Observable Systems - An Introduction to Observability","description":"What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.","keywords":[],"articleBody":"Introduction Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.\nWhat is Observability? Observability is a term or a concept that has its root in Physics, mainly in Control Theory. According to Wikipedia -\nObservability is a measure of how well internal states of a system can be inferred from knowledge of its external outputs.\n… A system is said to be observable if, for any possible evolution of state and control vectors, the current state can be estimated using only the information from outputs (physically, this generally corresponds to information obtained by sensors). In other words, one can determine the behavior of the entire system from the system’s outputs. On the other hand, if the system is not observable, there are state trajectories that are not distinguishable by only measuring the outputs.\nExtending the same concept to a software system, we can say -\nA software system is observable if we can ask new questions from the outside to understand what is going on on the inside, all without deploying new code.\nSo in effect, observability is a measure of how well we can make sense of what is going on with our application by asking arbitrary questions (the unknown-unknowns) about the system, without having to know the questions in advance. The more observable our systems are, the more arbitrary questions we are able to ask. Used effectively, it can greatly improve our application quality and reliability by making it relatively easy to debug and identify potential performance and reliability issues in production.\nWhy should I care about Observability? Because software is becoming more and more complex than what it used to be, making it more difficult to predict most of the production issues in advance.\nConsider a regular monolithic application. In such applications the entire codebase is in one place, making it possible to browse through different use cases end-to-end and anticipate most (if not all) of the production issues in advance. Once the problematic areas have been identified we augment the application code to collect and report various metrics, visualise these metrics in dashboards, and create alerts. Combining application logs with with these collected metrics was often enough to debug most of the performance and reliability issues in production. If we could also throw in distributed tracing to the mix, then our chances of finding and quickly fixing these issues would increase even further.\nContrast this with the current trend in the software world. Nowadays we see a clear preference among companies to decompose large monolithic applications into smaller-sized microservices in order to achieve greater business agility. As a result, systems are becoming more and more distributed. Small and independent teams are working on different distributed systems in parallel whose code bases are separate. What used to be functions invocations before have now been converted to network calls between remote applications. With the adoption of DevOps practices releases are becoming more frequent, reducing the time needed to release features to production once they are ready. All of these are resulting in more moving parts in a system which are changing frequently at their own pace, making it difficult to predict how an application will behave in production. Often times, questions like “will the release of this new features in application X interfere with the existing features in application a? What about application b? Or c?….” can be answered only after we release application X in production. As a direct consequence of adopting a microservice-oriented architecture, debugging gets more difficult than a monolithic system.\nThis is where the concept of observability is particularly useful. Being able to ask arbitrary questions about our entire system without having to know them in advance can greatly reduce the burden of debugging and identifying performance and reliability issues in a microservice architecture.\nThe 3 pillars of Observability Metrics, Logs, and Distributed Traces are often called the 3 pillars of observability because these are the tools we have been traditionally using to make sense of our system. Most of us already familiar with these concepts and related tools, so we are not going to dive deep into them in this article. Instead, we will try to understand why these 3 pillars are not enough to create an observable system.\nMetrics Metrics are numerical measurements taken over intervals of time. We use metrics to to measure response times of requests, to count the number requests that failed to get a valid response etc. For a long time metrics have been the standard way to monitor the overall health of an application - number of live instances, current memory consumption, cpu usage, response times, query execution time etc. They are also being used to trigger alerts in case of emergencies like instances going down, low memory, high cpu usage etc. All in all, very useful tool.\nHowever, traditional metrics-based tools are not enough to create an observable system. One of the primary reasons for this is that any tools that are metric-based can deal with only low-cardinality dimensions. Things like user ids, purchase ids, shopping cart ids - any data that have high-cardinality are not collected with these tools as otherwise the cost would blow up. Also, in order to keep the associated costs low, metrics are aggregated on the client-side and then stored in their aggregated form, losing granularity even further. Without high-cardinality data it is difficult to investigate and debug issues in a microservice architecture. As a result any questions that are answered by a metric-based tool have to be pre-defined so that we can collect targeted metrics to answer them. This is an antithesis to the premise of observability as observability requires being able to ask arbitrary questions about a system without knowing them in advance. Without high-cardinality data, this is not possible.\nAnother downside is that the metrics that are collected are not tied to their source request which triggered them. In a microsevice-oriented architecture a single user request can hit many different services, query different databases or caches, send messages to queues or kafka topics, or can interact with any combination of these. We can collect metrics from each of these sources, but once collected we can never link them back together. This makes it difficult to answer questions like why do this particular group of users see a high response times of 10 seconds while our metrics dashboard is showing a p99 of 1 seconds?\nLogs Logs are a useful tool which help us debug issues by providing us context-dependent messages and stack traces. However, they cannot be used effectively to create an observable system.\nOne of the primary downsides of using logging to create an observable system is the associated cost. Systems that use logging to improve observability becomes too expensive to maintain. This is how Ben Sigelman, co-founder of Lightstep, explains the problem in one of his articles written on the Lightstep blog (I highly recommend to give the entire article a thorough read) -\nIf we want to use logs to account for individual transactions (like we used to in the days of a monolithic web server’s request logs), we would need to pay for the following:\nApplication transaction rate\r* all microservices\r* cost of network and storage\r* weeks of data retention\r= way, way too much $$$$\rLogging systems can’t afford to store data about every transaction anymore because the cost of those transactional logs is proportional to the number of microservices touched by an average transaction.\nAnother downside is that In order to answer any arbitrary questions about our system we would have to log quite aggressively. Since traditional logging libraries cannot dynamically sample logs, logging excessively could adversely affect the performance of the application as a whole.\nDistributed Tracing This is how OpenTracing, a Cloud Native Computing Foundation project, defines Distributed Tracing -\nDistributed tracing, also called distributed request tracing, is a method used to profile and monitor applications, especially those built using a microservices architecture. Distributed tracing helps pinpoint where failures occur and what causes poor performance.\nDistributed Tracing has its use in building an observable system. After all, they are the threads with which we can connect an end-to-end request in a microservice architecture. However, they come with a few challenges on their own.\nThe first challenge is choosing a right sampling strategy. Traditionally distributed tracing tools have been making the decision of whether to sample a request or not at the very beginning, when a request enters the infrastructure for the first time from outside. This results in a sampling strategy that is either too aggressive and collect too much data which are expensive to store and analyse, or too relaxed and does not collect enough data to help us with observability.\nThe second challenge is the UI with which we analyse the trace data. Tracing tools usually come with a UI component which display all the traces in what is called a trace view. In a system with hundreds of services where a typical request touches 20 or 30 of them, the trace view becomes too complex for a human to analyse without any automated support. In addition, spans, which are treated as units of work by the tracing systems and responsible for capturing trace data from services, are too low level to be used for debugging purposes. Cindy Sridharan wrote an excellent article on this topic where she explains the problem in a much better way -\nAdmittedly, some tracing systems provide condensed traceviews when the number of spans in a trace are so exceedingly large that they cannot be displayed in a single visualization. Yet, the amount of information being encapsulated even in such pared down views still squarely puts the onus on the engineers to sift through all the data the traceview exposes and narrow down the set of culprit services. This is an endeavor machines are truly faster, more repeatable and less error-prone than humans at accomplishing.\n… The fundamental problem with the traceview is that a span is too low-level a primitive for both latency and “root cause” analysis. It’s akin to looking at individual CPU instructions to debug an exception when a much higher level entity like a backtrace would benefit day-to-day engineers the most.\nFurthermore, I’d argue that what is ideally required isn’t the entire picture of what happened during the lifecycle of a request that modern day traces depict. What is instead required is some form of higher level abstraction of what went wrong (analogous to the backtrace) along with some context. Instead of seeing an entire trace, what I really want to be seeing is a portion of the trace where something interesting or unusual is happening. Currently, this process is entirely manual: given a trace, an engineer is required to find relevant spans to spot anything interesting. Humans eyeballing spans in individual traces in the hopes of finding suspicious behavior simply isn’t scalable, especially when they have to deal with the cognitive overhead of making sense of all the metadata encoded in all the various spans like the span ID, the RPC method name, the duration of the span, logs, tags and so forth.\nI highly recommend you to give the article a thorough read.\nWhat does an ideal Observability tool look like? Charity Majors, co-founder of HoneyComb, wrote an excellent article on the HoneyComb blog where she mentions the criteria that a tool must fulfil in order to deliver observability -\nArbitrarily-wide structured raw events Context persisted through the execution path Without indexes or schemas High-cardinality, high-dimensionality Ordered dimensions for traceability Client-side dynamic sampling An exploratory visual interface that lets you slice and dice and combine dimensions In close to real-time She then goes on to explain the reasoning behind her choices, all of which I fully agree with. I highly recommend giving the article a thorough read.\nTrying out an existing Observability tool - HoneyComb In the same article that I have mentioned just now, Charity mentions how HoneyComb was built to deliver on these promises. Hence I decided to give it a try by checking out their live play scenarios.\nIn the Play with Tracing and BubbleUp scenario I followed the step by step guide to identify some outlier requests which were taking longer than the rest. By the end of the demo I was able to nail the problem down to the individual user who was experiencing the slower response times. I could definitely see how this technique could help me to debug performance issues in production which are affecting a portion of the users but are not visible in my pre-defined metrics dashboard.\nNext I tried out the Play with Events scenario which contains data about an actual production incident that HoneyComb faced back in 2018. Using the step by step guide as before I was able to identify the failed database that was the root of the issue.\nI noticed the following aspects of the tool -\nHigh-cardinality data: In the first scenario I was able to link the response time with an individual user, and then link the slower response time with the individual query that was being executed. Without high-cardinality this would have been impossible. In the absence of high cardinality data I could at best try to guess the issue and add sporadic log statements here and there, but I would still have to rely on luck to give me a break. Debugging should not be tied to luck. Metrics are also tied to requests/traces: All response times were tied with each individual trace, thus making it easy to identify requests which were slow. Wide events: The trace events contained a lot of data, including even the database query that was executed by the affected user! Without this query it would have been difficult to nail it down to the database performance problem. Dynamic dashboards: all the dashboards that are being generated are fully dynamic, and it’s possible to create dashboards per dimension! At this point I was curious to know the strategy HoneyComb uses to decide which requests to sample. I searched in the doc and found the section about Dynamic Sampling, where it’s mentioned how it’s possible to make the sampling decision based on whether an HTTP request encounters an error -\nFor example: when recording HTTP events, we may care about seeing every server error but need less resolution when looking at successful requests. We can then set the sample rate for successful requests to 100 (storing one in a hundred successful events). We include the sample rate along with each event—100 for successful events and 1 for error events.\nHence with HoneyComb it is possible to delay the sampling decision once the request has been fully executed. This strategy is very handy and can be used to sample aggressively for failed/problematic requests and thus making it easy to debug them, while at the same time performing a relaxed sampling for the successful requests and thus helping us to keep the data volume low.\nOne other thing that I noticed - in order to identify which requests are slow, we first need to define what a slow request looks like. For some applications it may be perfectly acceptable if a request completes within 4 seconds, while for some other type of applications it might be too slow. Since SLI/SLO/SLAs are gaining more and more popularity in our industry, it would make sense to use SLOs to define these criteria, and then create sampling strategies based on this definition. If a request fails our SLO, we can always decide to sample and store the request so that we can later debug why it failed. If it is successful, we can adopt a more relaxed sampling rate.\nAll in all, HoneyComb has left quite a good impression on me. Indeed it’s an excellent tool!\nAre Metric-based monitoring tools going to be obsolete? I don’t think so. Metrics-based monitoring tools are still the best choice when we want to answer any pre-defined questions about our system (also called known-unknowns) -\nHow many application instances are live at the moment? What is the amount of memory being consumed by the applications? What is the CPU usage etc. Observability tools, on the other hand, are best at answering the unknown-unknowns, things like -\nWhy does this user sees a response time of 4 seconds? Why are the database queries hitting the database instances in region X take more than 5 seconds to complete etc. Any ideal observable system would combine them both.\nConclusion I am still at the very early stage of my observability journey, and still learning the concepts and the tools used in this field. However, I am already convinced that in a distributed system architecture observability practices are invaluable and can help us improve the quality and the reliability of our applications by a great deal. I intend to apply these practices in my day to day work and as I learn more I will definitely try to share my learnings in my blog (given time permits)!\nAcknowledgements These are the resources which helped me learned about what observability truly is and how to build an observable system -\nDefinition of Observability by Charity Majors Observability — A 3-Year Retrospective - Charity Majors Three Pillars with Zero Answers - Towards a New Scorecard for Observability - Ben Sigelman So You Want To Build An Observability Tool… - Charity Majors Distributed Systems Observability - Cindy Sridharan Distributed Tracing — we’ve been doing it wrong - Cindy Sridharan ","wordCount":"2975","inLanguage":"en","datePublished":"2020-10-19T02:38:52+02:00","dateModified":"2020-10-19T02:38:52+02:00","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/"},"publisher":{"@type":"Organization","name":"Random Musings","logo":{"@type":"ImageObject","url":"https://www.sayemahmed.com/favicon.ico"}}}</script></head><body id=top><header class=header><nav class=nav><div class=logo><a href=https://www.sayemahmed.com/ accesskey=h title="Random Musings (Alt + H)">Random Musings</a><div class=logo-switches><button id=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
-<svg id="moon" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-<svg id="sun" width="24" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><ul id=menu><li><a href=https://www.sayemahmed.com/about-me title="About Me"><span>About Me</span></a></li><li><a href=https://www.sayemahmed.com/index.xml title=RSS><span>RSS</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">How to Build Observable Systems - An Introduction to Observability</h1><div class=post-description>What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.</div><div class=post-meta><span title='2020-10-19 02:38:52 +0200 CEST'>October 19, 2020</span></div></header><div class=toc><details open><summary accesskey=c title="(Alt + C)"><span class=details>Table of Contents</span></summary><div class=inner><ul><li><a href=#introduction aria-label=Introduction>Introduction</a></li><li><a href=#what-is-observability aria-label="What is Observability?">What is Observability?</a></li><li><a href=#why-should-i-care-about-observability aria-label="Why should I care about Observability?">Why should I care about Observability?</a></li><li><a href=#the-3-pillars-of-observability aria-label="The 3 pillars of Observability">The 3 pillars of Observability</a><ul><li><a href=#metrics aria-label=Metrics>Metrics</a></li><li><a href=#logs aria-label=Logs>Logs</a></li><li><a href=#distributed-tracing aria-label="Distributed Tracing">Distributed Tracing</a></li></ul></li><li><a href=#what-does-an-ideal-observability-tool-look-like aria-label="What does an ideal Observability tool look like?">What does an ideal Observability tool look like?</a></li><li><a href=#trying-out-an-existing-observability-tool---honeycomb aria-label="Trying out an existing Observability tool - HoneyComb">Trying out an existing Observability tool - HoneyComb</a></li><li><a href=#are-metric-based-monitoring-tools-going-to-be-obsolete aria-label="Are Metric-based monitoring tools going to be obsolete?">Are Metric-based monitoring tools going to be obsolete?</a></li><li><a href=#conclusion aria-label=Conclusion>Conclusion</a></li><li><a href=#acknowledgements aria-label=Acknowledgements>Acknowledgements</a></li></ul></div></details></div><div class=post-content><h2 id=introduction>Introduction<a hidden class=anchor aria-hidden=true href=#introduction>#</a></h2><p>Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.</p><h2 id=what-is-observability>What is Observability?<a hidden class=anchor aria-hidden=true href=#what-is-observability>#</a></h2><p>Observability is a term or a concept that has its root in Physics, mainly in Control Theory. According to <a href=https://en.wikipedia.org/wiki/Observability>Wikipedia</a> -</p><blockquote><p><em>Observability is a measure of how well internal states of a system can be inferred from knowledge of its external outputs.</em></p><p><em>&mldr; A system is said to be observable if, for any possible evolution of state and control vectors, the current state can be estimated using only the information from outputs (physically, this generally corresponds to information obtained by sensors). In other words, one can determine the behavior of the entire system from the system&rsquo;s outputs. On the other hand, if the system is not observable, there are state trajectories that are not distinguishable by only measuring the outputs.</em></p></blockquote><p>Extending the same concept to a software system, we can say -</p><blockquote><p><em>A software system is observable if we can ask new questions from the outside to understand what is going on on the inside, all without deploying new code.</em></p></blockquote><p>So in effect, observability is a measure of how well we can make sense of what is going on with our application by asking arbitrary questions (the unknown-unknowns) about the system, without having to know the questions in advance. The more observable our systems are, the more arbitrary questions we are able to ask. Used effectively, it can greatly improve our application quality and reliability by making it relatively easy to debug and identify potential performance and reliability issues in production.</p><h2 id=why-should-i-care-about-observability>Why should I care about Observability?<a hidden class=anchor aria-hidden=true href=#why-should-i-care-about-observability>#</a></h2><p>Because software is becoming more and more complex than what it used to be, making it more difficult to predict most of the production issues in advance.</p><p>Consider a regular monolithic application. In such applications the entire codebase is in one place, making it possible to browse through different use cases end-to-end and anticipate most (if not all) of the production issues in advance. Once the problematic areas have been identified we augment the application code to collect and report various metrics, visualise these metrics in dashboards, and create alerts. Combining application logs with with these collected metrics was often enough to debug most of the performance and reliability issues in production. If we could also throw in distributed tracing to the mix, then our chances of finding and quickly fixing these issues would increase even further.</p><p>Contrast this with the current trend in the software world. Nowadays we see a clear preference among companies to decompose large monolithic applications into smaller-sized microservices in order to achieve greater business agility. As a result, systems are becoming more and more distributed. Small and independent teams are working on different distributed systems in parallel whose code bases are separate. What used to be functions invocations before have now been converted to network calls between remote applications. With the adoption of DevOps practices releases are becoming more frequent, reducing the time needed to release features to production once they are ready. All of these are resulting in more moving parts in a system which are changing frequently at their own pace, making it difficult to predict how an application will <a href=https://www.martinfowler.com/bliki/SyntheticMonitoring.html>behave in production</a>. Often times, questions like “will the release of this new features in application X interfere with the existing features in application a? What about application b? Or c?….” can be answered only after we release application X in production. As a direct consequence of adopting a microservice-oriented architecture, debugging gets more difficult than a monolithic system.</p><p>This is where the concept of observability is particularly useful. Being able to ask arbitrary questions about our entire system without having to know them in advance can greatly reduce the burden of debugging and identifying performance and reliability issues in a microservice architecture.</p><h2 id=the-3-pillars-of-observability>The 3 pillars of Observability<a hidden class=anchor aria-hidden=true href=#the-3-pillars-of-observability>#</a></h2><p>Metrics, Logs, and Distributed Traces are often called the 3 pillars of observability because these are the tools we have been traditionally using to make sense of our system. Most of us already familiar with these concepts and related tools, so we are not going to dive deep into them in this article. Instead, we will try to understand why these 3 pillars are not enough to create an observable system.</p><h3 id=metrics>Metrics<a hidden class=anchor aria-hidden=true href=#metrics>#</a></h3><p>Metrics are numerical measurements taken over intervals of time. We use metrics to to measure response times of requests, to count the number requests that failed to get a valid response etc. For a long time metrics have been the standard way to monitor the overall health of an application - number of live instances, current memory consumption, cpu usage, response times, query execution time etc. They are also being used to trigger alerts in case of emergencies like instances going down, low memory, high cpu usage etc. All in all, very useful tool.</p><p>However, traditional metrics-based tools are not enough to create an observable system. One of the primary reasons for this is that any tools that are metric-based can deal with only low-cardinality dimensions. Things like user ids, purchase ids, shopping cart ids - any data that have high-cardinality are not collected with these tools as otherwise the cost would blow up. Also, in order to keep the associated costs low, metrics are aggregated on the client-side and then stored in their aggregated form, losing granularity even further. Without high-cardinality data it is difficult to investigate and debug issues in a microservice architecture. As a result any questions that are answered by a metric-based tool have to be pre-defined so that we can collect targeted metrics to answer them. This is an antithesis to the premise of observability as observability requires being able to ask arbitrary questions about a system without knowing them in advance. Without high-cardinality data, this is not possible.</p><p>Another downside is that the metrics that are collected are not tied to their source request which triggered them. In a microsevice-oriented architecture a single user request can hit many different services, query different databases or caches, send messages to queues or kafka topics, or can interact with any combination of these. We can collect metrics from each of these sources, but once collected we can never link them back together. This makes it difficult to answer questions like <em>why do this particular group of users see a high response times of 10 seconds while our metrics dashboard is showing a p99 of 1 seconds</em>?</p><h3 id=logs>Logs<a hidden class=anchor aria-hidden=true href=#logs>#</a></h3><p>Logs are a useful tool which help us debug issues by providing us context-dependent messages and stack traces. However, they cannot be used effectively to create an observable system.</p><p>One of the primary downsides of using logging to create an observable system is the associated cost. Systems that use logging to improve observability becomes too expensive to maintain. This is how <a href=https://twitter.com/el_bhs>Ben Sigelman</a>, co-founder of Lightstep, explains the problem in <a href=https://lightstep.com/blog/three-pillars-zero-answers-towards-new-scorecard-observability/>one of his articles</a> written on the Lightstep blog (I highly recommend to give the entire article a thorough read) -</p><blockquote><p><em>If we want to use logs to account for individual transactions (like we used to in the days of a monolithic web server&rsquo;s request logs), we would need to pay for the following:</em></p><pre><code> Application transaction rate
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>
+  How to Build Observable Systems - An Introduction to Observability · Random Musings
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="author" content="MD Sayem Ahmed">
+<meta name="description" content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="How to Build Observable Systems - An Introduction to Observability">
+  <meta name="twitter:description" content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.">
+
+<meta property="og:url" content="https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/">
+  <meta property="og:site_name" content="Random Musings">
+  <meta property="og:title" content="How to Build Observable Systems - An Introduction to Observability">
+  <meta property="og:description" content="What is Observability? What is an Observable System? This article tries to explain these concepts in a beginner-friendly way.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2020-10-19T02:38:52+02:00">
+    <meta property="article:modified_time" content="2020-10-19T02:38:52+02:00">
+
+
+
+
+<link rel="canonical" href="https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.4b392a85107b91dbdabc528edf014a6ab1a30cd44cafcd5325c8efe796794fca.css" integrity="sha256-SzkqhRB7kdvavFKO3wFKarGjDNRMr81TJcjv55Z5T8o=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/img/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/img/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-auto">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://www.sayemahmed.com/">
+      Random Musings
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/posts/">Blog</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/about/">About</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://www.sayemahmed.com/posts/how-to-build-observable-system-an-introduction-to-observability/">
+              How to Build Observable Systems - An Introduction to Observability
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2020-10-19T02:38:52&#43;02:00">
+                October 19, 2020
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
+              15-minute read
+            </span>
+          </div>
+          
+          
+          
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="introduction">
+  Introduction
+  <a class="heading-link" href="#introduction">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Recently I have been hearing about observability more and more. The promise that an observable system can help us to debug and identify performance and reliability issues in a microservice architecture sounded quite good to me. Hence I decided to read up and learn more on this topic. In this blog post I will try to summarise what I have learned about observability so far.</p>
+<h2 id="what-is-observability">
+  What is Observability?
+  <a class="heading-link" href="#what-is-observability">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Observability is a term or a concept that has its root in Physics, mainly in Control Theory. According to <a href="https://en.wikipedia.org/wiki/Observability"  class="external-link" target="_blank" rel="noopener">Wikipedia</a> -</p>
+<blockquote>
+<p><em>Observability is a measure of how well internal states of a system can be inferred from knowledge of its external outputs.</em></p>
+<p><em>&hellip; A system is said to be observable if, for any possible evolution of state and control vectors, the current state can be estimated using only the information from outputs (physically, this generally corresponds to information obtained by sensors). In other words, one can determine the behavior of the entire system from the system&rsquo;s outputs. On the other hand, if the system is not observable, there are state trajectories that are not distinguishable by only measuring the outputs.</em></p>
+</blockquote>
+<p>Extending the same concept to a software system, we can say -</p>
+<blockquote>
+<p><em>A software system is observable if we can ask new questions from the outside to understand what is going on on the inside, all without deploying new code.</em></p>
+</blockquote>
+<p>So in effect, observability is a measure of how well we can make sense of what is going on with our application by asking arbitrary questions (the unknown-unknowns) about the system, without having to know the questions in advance. The more observable our systems are, the more arbitrary questions we are able to ask. Used effectively, it can greatly improve our application quality and reliability by making it relatively easy to debug and identify potential performance and reliability issues in production.</p>
+<h2 id="why-should-i-care-about-observability">
+  Why should I care about Observability?
+  <a class="heading-link" href="#why-should-i-care-about-observability">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Because software is becoming more and more complex than what it used to be, making it more difficult to predict most of the production issues in advance.</p>
+<p>Consider a regular monolithic application. In such applications the entire codebase is in one place, making it possible to browse through different use cases end-to-end and anticipate most (if not all) of the production issues in advance. Once the problematic areas have been identified we augment the application code to collect and report various metrics, visualise these metrics in dashboards, and create alerts. Combining application logs with with these collected metrics was often enough to debug most of the performance and reliability issues in production. If we could also throw in distributed tracing to the mix, then our chances of finding and quickly fixing these issues would increase even further.</p>
+<p>Contrast this with the current trend in the software world. Nowadays we see a clear preference among companies to decompose large monolithic applications into smaller-sized microservices in order to achieve greater business agility. As a result, systems are becoming more and more distributed. Small and independent teams are working on different distributed systems in parallel whose code bases are separate. What used to be functions invocations before have now been converted to network calls between remote applications. With the adoption of DevOps practices releases are becoming more frequent, reducing the time needed to release features to production once they are ready.  All of these are resulting in more moving parts in a system which are changing frequently at their own pace, making it difficult to predict how an application will <a href="https://www.martinfowler.com/bliki/SyntheticMonitoring.html"  class="external-link" target="_blank" rel="noopener">behave in production</a>. Often times, questions like “will the release of this new features in application X interfere with the existing features in application a? What about application b? Or c?….” can be answered only after we release application X in production. As a direct consequence of adopting a microservice-oriented architecture, debugging gets more difficult than a monolithic system.</p>
+<p>This is where the concept of observability is particularly useful. Being able to ask arbitrary questions about our entire system without having to know them in advance can greatly reduce the burden of debugging and identifying performance and reliability issues in a microservice architecture.</p>
+<h2 id="the-3-pillars-of-observability">
+  The 3 pillars of Observability
+  <a class="heading-link" href="#the-3-pillars-of-observability">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Metrics, Logs, and Distributed Traces are often called the 3 pillars of observability because these are the tools we have been traditionally using to make sense of our system. Most of us already familiar with these concepts and related tools, so we are not going to dive deep into them in this article. Instead, we will try to understand why these 3 pillars are not enough to create an observable system.</p>
+<h3 id="metrics">
+  Metrics
+  <a class="heading-link" href="#metrics">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>Metrics are numerical measurements taken over intervals of time. We use metrics to to measure response times of requests, to count the number requests that failed to get a valid response etc. For a long time metrics have been the standard way to monitor the overall health of an application - number of live instances, current memory consumption, cpu usage, response times, query execution time etc. They are also being used to trigger alerts in case of emergencies like instances going down, low memory, high cpu usage etc. All in all, very useful tool.</p>
+<p>However, traditional metrics-based tools are not enough to create an observable system. One of the primary reasons for this is that any tools that are metric-based can deal with only low-cardinality dimensions. Things like user ids, purchase ids, shopping cart ids - any data that have high-cardinality are not collected with these tools as otherwise the cost would blow up. Also, in order to keep the associated costs low, metrics are aggregated on the client-side and then stored in their aggregated form, losing granularity even further. Without high-cardinality data it is difficult to investigate and debug issues in a microservice architecture. As a result any questions that are answered by a metric-based tool have to be pre-defined so that we can collect targeted metrics to answer them. This is an antithesis to the premise of observability as observability requires being able to ask arbitrary questions about a system without knowing them in advance. Without high-cardinality data, this is not possible.</p>
+<p>Another downside is that the metrics that are collected are not tied to their source request which triggered them. In a microsevice-oriented architecture a single user request can hit many different services, query different databases or caches, send messages to queues or kafka topics, or can interact with any combination of these. We can collect metrics from each of these sources, but once collected we can never link them back together. This makes it difficult to answer questions like <em>why do this particular group of users see a high response times of 10 seconds while our metrics dashboard is showing a p99 of 1 seconds</em>?</p>
+<h3 id="logs">
+  Logs
+  <a class="heading-link" href="#logs">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>Logs are a useful tool which help us debug issues by providing us context-dependent messages and stack traces. However, they cannot be used effectively to create an observable system.</p>
+<p>One of the primary downsides of using logging to create an observable system is the associated cost. Systems that use logging to improve observability becomes too expensive to maintain. This is how <a href="https://twitter.com/el_bhs"  class="external-link" target="_blank" rel="noopener">Ben Sigelman</a>, co-founder of Lightstep, explains the problem in <a href="https://lightstep.com/blog/three-pillars-zero-answers-towards-new-scorecard-observability/"  class="external-link" target="_blank" rel="noopener">one of his articles</a> written on the Lightstep blog (I highly recommend to give the entire article a thorough read) -</p>
+<blockquote>
+<p><em>If we want to use logs to account for individual transactions (like we used to in the days of a monolithic web server&rsquo;s request logs), we would need to pay for the following:</em></p>
+<pre><code> Application transaction rate
      * all microservices
      * cost of network and storage
      * weeks of data retention
  = way, way too much $$$$
-</code></pre><p><em>Logging systems can&rsquo;t afford to store data about every transaction anymore because the cost of those transactional logs is proportional to the number of microservices touched by an average transaction.</em></p></blockquote><p>Another downside is that In order to answer any arbitrary questions about our system we would have to log quite aggressively. Since traditional logging libraries cannot dynamically sample logs, logging excessively could adversely affect the performance of the application as a whole.</p><h3 id=distributed-tracing>Distributed Tracing<a hidden class=anchor aria-hidden=true href=#distributed-tracing>#</a></h3><p>This is how <a href=https://opentracing.io/>OpenTracing</a>, a Cloud Native Computing Foundation project, defines Distributed Tracing -</p><blockquote><p><em>Distributed tracing, also called distributed request tracing, is a method used to profile and monitor applications, especially those built using a microservices architecture. Distributed tracing helps pinpoint where failures occur and what causes poor performance.</em></p></blockquote><p>Distributed Tracing has its use in building an observable system. After all, they are the threads with which we can connect an end-to-end request in a microservice architecture. However, they come with a few challenges on their own.</p><p>The first challenge is choosing a right sampling strategy. Traditionally distributed tracing tools have been making the decision of whether to sample a request or not at the very beginning, when a request enters the infrastructure for the first time from outside. This results in a sampling strategy that is either too aggressive and collect too much data which are expensive to store and analyse, or too relaxed and does not collect enough data to help us with observability.</p><p>The second challenge is the UI with which we analyse the trace data. Tracing tools usually come with a UI component which display all the traces in what is called a trace view. In a system with hundreds of services where a typical request touches 20 or 30 of them, the trace view becomes too complex for a human to analyse without any automated support. In addition, spans, which are treated as units of work by the tracing systems and responsible for capturing trace data from services, are too low level to be used for debugging purposes. <a href=https://twitter.com/copyconstruct>Cindy Sridharan</a> wrote <a href=https://copyconstruct.medium.com/distributed-tracing-weve-been-doing-it-wrong-39fc92a857df>an excellent article</a> on this topic where she explains the problem in a much better way -</p><blockquote><p><em>Admittedly, some tracing systems provide condensed traceviews when the number of spans in a trace are so exceedingly large that they cannot be displayed in a single visualization. Yet, the amount of information being encapsulated even in such pared down views still squarely puts the onus on the engineers to sift through all the data the traceview exposes and narrow down the set of culprit services. This is an endeavor machines are truly faster, more repeatable and less error-prone than humans at accomplishing.</em></p><p><em>&mldr; The fundamental problem with the traceview is that a span is too low-level a primitive for both latency and “root cause” analysis. It’s akin to looking at individual CPU instructions to debug an exception when a much higher level entity like a backtrace would benefit day-to-day engineers the most.</em></p><p><em>Furthermore, I’d argue that what is ideally required isn’t the entire picture of what happened during the lifecycle of a request that modern day traces depict. What is instead required is some form of higher level abstraction of what went wrong (analogous to the backtrace) along with some context. Instead of seeing an entire trace, what I really want to be seeing is a portion of the trace where something interesting or unusual is happening. Currently, this process is entirely manual: given a trace, an engineer is required to find relevant spans to spot anything interesting. Humans eyeballing spans in individual traces in the hopes of finding suspicious behavior simply isn’t scalable, especially when they have to deal with the cognitive overhead of making sense of all the metadata encoded in all the various spans like the span ID, the RPC method name, the duration of the span, logs, tags and so forth.</em></p></blockquote><p>I highly recommend you to give the article a thorough read.</p><h2 id=what-does-an-ideal-observability-tool-look-like>What does an ideal Observability tool look like?<a hidden class=anchor aria-hidden=true href=#what-does-an-ideal-observability-tool-look-like>#</a></h2><p><a href=https://twitter.com/mipsytipsy>Charity Majors</a>, co-founder of HoneyComb, wrote <a href=https://www.honeycomb.io/blog/so-you-want-to-build-an-observability-tool/>an excellent article</a> on the HoneyComb blog where she mentions the criteria that a tool must fulfil in order to deliver observability -</p><ol><li>Arbitrarily-wide structured raw events</li><li>Context persisted through the execution path</li><li>Without indexes or schemas</li><li>High-cardinality, high-dimensionality</li><li>Ordered dimensions for traceability</li><li>Client-side dynamic sampling</li><li>An exploratory visual interface that lets you slice and dice and combine dimensions</li><li>In close to real-time</li></ol><p>She then goes on to explain the reasoning behind her choices, all of which I fully agree with. I highly recommend giving the article a thorough read.</p><h2 id=trying-out-an-existing-observability-tool---honeycomb>Trying out an existing Observability tool - HoneyComb<a hidden class=anchor aria-hidden=true href=#trying-out-an-existing-observability-tool---honeycomb>#</a></h2><p>In the same article that I have mentioned just now, Charity mentions how <a href=https://www.honeycomb.io/>HoneyComb</a> was built to deliver on these promises. Hence I decided to give it a try by checking out their live play scenarios.</p><p>In the <a href=https://play.honeycomb.io/tracing>Play with Tracing and BubbleUp</a> scenario I followed the step by step guide to identify some outlier requests which were taking longer than the rest. By the end of the demo I was able to nail the problem down to the individual user who was experiencing the slower response times. I could definitely see how this technique could help me to debug performance issues in production which are affecting a portion of the users but are not visible in my pre-defined metrics dashboard.</p><p>Next I tried out the <a href=https://play.honeycomb.io/events>Play with Events</a> scenario which contains data about an actual production incident that HoneyComb <a href=https://www.honeycomb.io/blog/rds-performance-degradation-postmortem/>faced back in 2018</a>. Using the step by step guide as before I was able to identify the failed database that was the root of the issue.</p><p>I noticed the following aspects of the tool -</p><ol><li>High-cardinality data: In the first scenario I was able to link the response time with an individual user, and then link the slower response time with the individual query that was being executed. Without high-cardinality this would have been impossible. In the absence of high cardinality data I could at best try to guess the issue and add sporadic log statements here and there, but I would still have to rely on luck to give me a break. Debugging should not be tied to luck.</li><li>Metrics are also tied to requests/traces: All response times were tied with each individual trace, thus making it easy to identify requests which were slow.</li><li>Wide events: The trace events contained a lot of data, including even the database query that was executed by the affected user! Without this query it would have been difficult to nail it down to the database performance problem.</li><li>Dynamic dashboards: all the dashboards that are being generated are fully dynamic, and it&rsquo;s possible to create dashboards per dimension!</li></ol><p>At this point I was curious to know the strategy HoneyComb uses to decide which requests to sample. I searched in the doc and found <a href=https://docs.honeycomb.io/working-with-your-data/best-practices/sampling/#static-map-of-sample-rates>the section about Dynamic Sampling</a>, where it&rsquo;s mentioned how it&rsquo;s possible to make the sampling decision based on whether an HTTP request encounters an error -</p><blockquote><p><em>For example: when recording HTTP events, we may care about seeing every server error but need less resolution when looking at successful requests. We can then set the sample rate for successful requests to 100 (storing one in a hundred successful events). We include the sample rate along with each event—100 for successful events and 1 for error events.</em></p></blockquote><p>Hence with HoneyComb it is possible to delay the sampling decision once the request has been fully executed. This strategy is very handy and can be used to sample aggressively for failed/problematic requests and thus making it easy to debug them, while at the same time performing a relaxed sampling for the successful requests and thus helping us to keep the data volume low.</p><p>One other thing that I noticed - in order to identify which requests are slow, we first need to define what a slow request looks like. For some applications it may be perfectly acceptable if a request completes within 4 seconds, while for some other type of applications it might be too slow. Since <a href=https://landing.google.com/sre/sre-book/chapters/service-level-objectives/>SLI/SLO/SLAs are gaining more and more popularity</a> in our industry, it would make sense to use SLOs to define these criteria, and then create sampling strategies based on this definition. If a request fails our SLO, we can always decide to sample and store the request so that we can later debug why it failed. If it is successful, we can adopt a more relaxed sampling rate.</p><p>All in all, HoneyComb has left quite a good impression on me. Indeed it&rsquo;s an excellent tool!</p><h2 id=are-metric-based-monitoring-tools-going-to-be-obsolete>Are Metric-based monitoring tools going to be obsolete?<a hidden class=anchor aria-hidden=true href=#are-metric-based-monitoring-tools-going-to-be-obsolete>#</a></h2><p>I don&rsquo;t think so. Metrics-based monitoring tools are still the best choice when we want to answer any pre-defined questions about our system (also called known-unknowns) -</p><ol><li>How many application instances are live at the moment?</li><li>What is the amount of memory being consumed by the applications?</li><li>What is the CPU usage etc.</li></ol><p>Observability tools, on the other hand, are best at answering the unknown-unknowns, things like -</p><ol><li>Why does this user sees a response time of 4 seconds?</li><li>Why are the database queries hitting the database instances in region X take more than 5 seconds to complete etc.</li></ol><p>Any ideal observable system would combine them both.</p><h2 id=conclusion>Conclusion<a hidden class=anchor aria-hidden=true href=#conclusion>#</a></h2><p>I am still at the very early stage of my observability journey, and still learning the concepts and the tools used in this field. However, I am already convinced that in a distributed system architecture observability practices are invaluable and can help us improve the quality and the reliability of our applications by a great deal. I intend to apply these practices in my day to day work and as I learn more I will definitely try to share my learnings in my blog (given time permits)!</p><h2 id=acknowledgements>Acknowledgements<a hidden class=anchor aria-hidden=true href=#acknowledgements>#</a></h2><p>These are the resources which helped me learned about what observability truly is and how to build an observable system -</p><ol><li><a href=https://twitter.com/mipsytipsy/status/1305398051842871297>Definition of Observability by Charity Majors</a></li><li><a href=https://thenewstack.io/observability-a-3-year-retrospective/>Observability — A 3-Year Retrospective - Charity Majors</a></li><li><a href=https://lightstep.com/blog/three-pillars-zero-answers-towards-new-scorecard-observability/>Three Pillars with Zero Answers - Towards a New Scorecard for Observability - Ben Sigelman</a></li><li><a href=https://www.honeycomb.io/blog/so-you-want-to-build-an-observability-tool/>So You Want To Build An Observability Tool… - Charity Majors</a></li><li><a href=https://learning.oreilly.com/library/view/distributed-systems-observability/9781492033431/>Distributed Systems Observability - Cindy Sridharan</a></li><li><a href=https://copyconstruct.medium.com/distributed-tracing-weve-been-doing-it-wrong-39fc92a857df>Distributed Tracing — we’ve been doing it wrong - Cindy Sridharan</a></li></ol></div><footer class=post-footer><ul class=post-tags></ul><nav class=paginav><a class=prev href=https://www.sayemahmed.com/posts/debugging-friendly-logging-patterns/><span class=title>« Prev</span><br><span>On-call-friendly Java Logging Patterns</span>
-</a><a class=next href=https://www.sayemahmed.com/posts/writing-executable-specifications-with-junit5-mockito-and-assertj/><span class=title>Next »</span><br><span>Writing Executable Specifications With Junit5 Mockito and AssertJ</span></a></nav><ul class=share-buttons><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on x" href="https://x.com/intent/tweet/?text=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability&amp;url=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f&amp;hashtags="><svg viewBox="0 0 512 512" height="30" width="30" fill="currentColor"><path d="M512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446C483.971.0 512 28.03 512 62.554zM269.951 190.75 182.567 75.216H56L207.216 272.95 63.9 436.783h61.366L235.9 310.383l96.667 126.4H456L298.367 228.367l134-153.151H371.033zM127.633 110h36.468l219.38 290.065H349.5z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on linkedin" href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f&amp;title=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability&amp;summary=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability&amp;source=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentColor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM160.461 423.278V197.561h-75.04v225.717h75.04zm270.539.0V293.839c0-69.333-37.018-101.586-86.381-101.586-39.804.0-57.634 21.891-67.617 37.266v-31.958h-75.021c.995 21.181.0 225.717.0 225.717h75.02V297.222c0-6.748.486-13.492 2.474-18.315 5.414-13.475 17.767-27.434 38.494-27.434 27.135.0 38.007 20.707 38.007 51.037v120.768H431zM123.448 88.722C97.774 88.722 81 105.601 81 127.724c0 21.658 16.264 39.002 41.455 39.002h.484c26.165.0 42.452-17.344 42.452-39.002-.485-22.092-16.241-38.954-41.943-39.002z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on reddit" href="https://reddit.com/submit?url=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f&title=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentColor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM446 265.638c0-22.964-18.616-41.58-41.58-41.58-11.211.0-21.361 4.457-28.841 11.666-28.424-20.508-67.586-33.757-111.204-35.278l18.941-89.121 61.884 13.157c.756 15.734 13.642 28.29 29.56 28.29 16.407.0 29.706-13.299 29.706-29.701.0-16.403-13.299-29.702-29.706-29.702-11.666.0-21.657 6.792-26.515 16.578l-69.105-14.69c-1.922-.418-3.939-.042-5.585 1.036-1.658 1.073-2.811 2.761-3.224 4.686l-21.152 99.438c-44.258 1.228-84.046 14.494-112.837 35.232-7.468-7.164-17.589-11.591-28.757-11.591-22.965.0-41.585 18.616-41.585 41.58.0 16.896 10.095 31.41 24.568 37.918-.639 4.135-.99 8.328-.99 12.576.0 63.977 74.469 115.836 166.33 115.836s166.334-51.859 166.334-115.836c0-4.218-.347-8.387-.977-12.493 14.564-6.47 24.735-21.034 24.735-38.001zM326.526 373.831c-20.27 20.241-59.115 21.816-70.534 21.816-11.428.0-50.277-1.575-70.522-21.82-3.007-3.008-3.007-7.882.0-10.889 3.003-2.999 7.882-3.003 10.885.0 12.777 12.781 40.11 17.317 59.637 17.317 19.522.0 46.86-4.536 59.657-17.321 3.016-2.999 7.886-2.995 10.885.008 3.008 3.011 3.003 7.882-.008 10.889zm-5.23-48.781c-16.373.0-29.701-13.324-29.701-29.698.0-16.381 13.328-29.714 29.701-29.714 16.378.0 29.706 13.333 29.706 29.714.0 16.374-13.328 29.698-29.706 29.698zM160.91 295.348c0-16.381 13.328-29.71 29.714-29.71 16.369.0 29.689 13.329 29.689 29.71.0 16.373-13.32 29.693-29.689 29.693-16.386.0-29.714-13.32-29.714-29.693z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on facebook" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentColor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H342.978V319.085h66.6l12.672-82.621h-79.272v-53.617c0-22.603 11.073-44.636 46.58-44.636H425.6v-70.34s-32.71-5.582-63.982-5.582c-65.288.0-107.96 39.569-107.96 111.204v62.971h-72.573v82.621h72.573V512h-191.104c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on whatsapp" href="https://api.whatsapp.com/send?text=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability%20-%20https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f"><svg viewBox="0 0 512 512" height="30" width="30" fill="currentColor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zm-58.673 127.703c-33.842-33.881-78.847-52.548-126.798-52.568-98.799.0-179.21 80.405-179.249 179.234-.013 31.593 8.241 62.428 23.927 89.612l-25.429 92.884 95.021-24.925c26.181 14.28 55.659 21.807 85.658 21.816h.074c98.789.0 179.206-80.413 179.247-179.243.018-47.895-18.61-92.93-52.451-126.81zM263.976 403.485h-.06c-26.734-.01-52.954-7.193-75.828-20.767l-5.441-3.229-56.386 14.792 15.05-54.977-3.542-5.637c-14.913-23.72-22.791-51.136-22.779-79.287.033-82.142 66.867-148.971 149.046-148.971 39.793.014 77.199 15.531 105.329 43.692 28.128 28.16 43.609 65.592 43.594 105.4-.034 82.149-66.866 148.983-148.983 148.984zm81.721-111.581c-4.479-2.242-26.499-13.075-30.604-14.571-4.105-1.495-7.091-2.241-10.077 2.241-2.986 4.483-11.569 14.572-14.182 17.562-2.612 2.988-5.225 3.364-9.703 1.12-4.479-2.241-18.91-6.97-36.017-22.23C231.8 264.15 222.81 249.484 220.198 245s-.279-6.908 1.963-9.14c2.016-2.007 4.48-5.232 6.719-7.847 2.24-2.615 2.986-4.484 4.479-7.472 1.493-2.99.747-5.604-.374-7.846-1.119-2.241-10.077-24.288-13.809-33.256-3.635-8.733-7.327-7.55-10.077-7.688-2.609-.13-5.598-.158-8.583-.158-2.986.0-7.839 1.121-11.944 5.604-4.105 4.484-15.675 15.32-15.675 37.364.0 22.046 16.048 43.342 18.287 46.332 2.24 2.99 31.582 48.227 76.511 67.627 10.685 4.615 19.028 7.371 25.533 9.434 10.728 3.41 20.492 2.929 28.209 1.775 8.605-1.285 26.499-10.833 30.231-21.295 3.732-10.464 3.732-19.431 2.612-21.298-1.119-1.869-4.105-2.99-8.583-5.232z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on telegram" href="https://telegram.me/share/url?text=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability&amp;url=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f"><svg viewBox="2 2 28 28" height="30" width="30" fill="currentColor"><path d="M26.49 29.86H5.5a3.37 3.37.0 01-2.47-1 3.35 3.35.0 01-1-2.47V5.48A3.36 3.36.0 013 3 3.37 3.37.0 015.5 2h21A3.38 3.38.0 0129 3a3.36 3.36.0 011 2.46V26.37a3.35 3.35.0 01-1 2.47 3.38 3.38.0 01-2.51 1.02zm-5.38-6.71a.79.79.0 00.85-.66L24.73 9.24a.55.55.0 00-.18-.46.62.62.0 00-.41-.17q-.08.0-16.53 6.11a.59.59.0 00-.41.59.57.57.0 00.43.52l4 1.24 1.61 4.83a.62.62.0 00.63.43.56.56.0 00.4-.17L16.54 20l4.09 3A.9.9.0 0021.11 23.15zM13.8 20.71l-1.21-4q8.72-5.55 8.78-5.55c.15.0.23.0.23.16a.18.18.0 010 .06s-2.51 2.3-7.52 6.8z"/></svg></a></li><li><a target=_blank rel="noopener noreferrer" aria-label="share How to Build Observable Systems - An Introduction to Observability on ycombinator" href="https://news.ycombinator.com/submitlink?t=How%20to%20Build%20Observable%20Systems%20-%20An%20Introduction%20to%20Observability&u=https%3a%2f%2fwww.sayemahmed.com%2fposts%2fhow-to-build-observable-system-an-introduction-to-observability%2f"><svg width="30" height="30" viewBox="0 0 512 512" fill="currentColor"><path d="M449.446.0C483.971.0 512 28.03 512 62.554V449.446C512 483.97 483.97 512 449.446 512H62.554C28.03 512 0 483.97.0 449.446V62.554C0 28.03 28.029.0 62.554.0H449.446zM183.8767 87.9921h-62.034L230.6673 292.4508V424.0079h50.6655V292.4508L390.1575 87.9921H328.1233L256 238.2489z"/></svg></a></li></ul></footer></article></main><footer class=footer><span>&copy; 2025 <a href=https://www.sayemahmed.com/>Random Musings</a></span> ·
-<span>Powered by
-<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
-<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentColor"><path d="M12 6H0l6-6z"/></svg>
-</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script><script>document.querySelectorAll("pre > code").forEach(e=>{const n=e.parentNode.parentNode,t=document.createElement("button");t.classList.add("copy-code"),t.innerHTML="copy";function s(){t.innerHTML="copied!",setTimeout(()=>{t.innerHTML="copy"},2e3)}t.addEventListener("click",t=>{if("clipboard"in navigator){navigator.clipboard.writeText(e.textContent),s();return}const n=document.createRange();n.selectNodeContents(e);const o=window.getSelection();o.removeAllRanges(),o.addRange(n);try{document.execCommand("copy"),s()}catch{}o.removeRange(n)}),n.classList.contains("highlight")?n.appendChild(t):n.parentNode.firstChild==n||(e.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName=="TABLE"?e.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(t):e.parentNode.appendChild(t))})</script></body></html>
+</code></pre>
+<p><em>Logging systems can&rsquo;t afford to store data about every transaction anymore because the cost of those transactional logs is proportional to the number of microservices touched by an average transaction.</em></p>
+</blockquote>
+<p>Another downside is that In order to answer any arbitrary questions about our system we would have to log quite aggressively. Since traditional logging libraries cannot dynamically sample logs, logging excessively could adversely affect the performance of the application as a whole.</p>
+<h3 id="distributed-tracing">
+  Distributed Tracing
+  <a class="heading-link" href="#distributed-tracing">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>This is how <a href="https://opentracing.io/"  class="external-link" target="_blank" rel="noopener">OpenTracing</a>, a Cloud Native Computing Foundation project, defines Distributed Tracing -</p>
+<blockquote>
+<p><em>Distributed tracing, also called distributed request tracing, is a method used to profile and monitor applications, especially those built using a microservices architecture. Distributed tracing helps pinpoint where failures occur and what causes poor performance.</em></p>
+</blockquote>
+<p>Distributed Tracing has its use in building an observable system. After all, they are the threads with which we can connect an end-to-end request in a microservice architecture. However, they come with a few challenges on their own.</p>
+<p>The first challenge is choosing a right sampling strategy. Traditionally distributed tracing tools have been making the decision of whether to sample a request or not at the very beginning, when a request enters the infrastructure for the first time from outside. This results in a sampling strategy that is either too aggressive and collect too much data which are expensive to store and analyse, or too relaxed and does not collect enough data to help us with observability.</p>
+<p>The second challenge is the UI with which we analyse the trace data. Tracing tools usually come with a UI component which display all the traces in what is called a trace view. In a system with hundreds of services where a typical request touches 20 or 30 of them, the trace view becomes too complex for a human to analyse without any automated support. In addition, spans, which are treated as units of work by the tracing systems and responsible for capturing trace data from services, are too low level to be used for debugging purposes. <a href="https://twitter.com/copyconstruct"  class="external-link" target="_blank" rel="noopener">Cindy Sridharan</a> wrote <a href="https://copyconstruct.medium.com/distributed-tracing-weve-been-doing-it-wrong-39fc92a857df"  class="external-link" target="_blank" rel="noopener">an excellent article</a> on this topic where she explains the problem in a much better way -</p>
+<blockquote>
+<p><em>Admittedly, some tracing systems provide condensed traceviews when the number of spans in a trace are so exceedingly large that they cannot be displayed in a single visualization. Yet, the amount of information being encapsulated even in such pared down views still squarely puts the onus on the engineers to sift through all the data the traceview exposes and narrow down the set of culprit services. This is an endeavor machines are truly faster, more repeatable and less error-prone than humans at accomplishing.</em></p>
+<p><em>&hellip; The fundamental problem with the traceview is that a span is too low-level a primitive for both latency and “root cause” analysis. It’s akin to looking at individual CPU instructions to debug an exception when a much higher level entity like a backtrace would benefit day-to-day engineers the most.</em></p>
+<p><em>Furthermore, I’d argue that what is ideally required isn’t the entire picture of what happened during the lifecycle of a request that modern day traces depict. What is instead required is some form of higher level abstraction of what went wrong (analogous to the backtrace) along with some context. Instead of seeing an entire trace, what I really want to be seeing is a portion of the trace where something interesting or unusual is happening. Currently, this process is entirely manual: given a trace, an engineer is required to find relevant spans to spot anything interesting. Humans eyeballing spans in individual traces in the hopes of finding suspicious behavior simply isn’t scalable, especially when they have to deal with the cognitive overhead of making sense of all the metadata encoded in all the various spans like the span ID, the RPC method name, the duration of the span, logs, tags and so forth.</em></p>
+</blockquote>
+<p>I highly recommend you to give the article a thorough read.</p>
+<h2 id="what-does-an-ideal-observability-tool-look-like">
+  What does an ideal Observability tool look like?
+  <a class="heading-link" href="#what-does-an-ideal-observability-tool-look-like">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p><a href="https://twitter.com/mipsytipsy"  class="external-link" target="_blank" rel="noopener">Charity Majors</a>, co-founder of HoneyComb, wrote <a href="https://www.honeycomb.io/blog/so-you-want-to-build-an-observability-tool/"  class="external-link" target="_blank" rel="noopener">an excellent article</a> on the HoneyComb blog where she mentions the criteria that a tool must fulfil in order to deliver observability -</p>
+<ol>
+<li>Arbitrarily-wide structured raw events</li>
+<li>Context persisted through the execution path</li>
+<li>Without indexes or schemas</li>
+<li>High-cardinality, high-dimensionality</li>
+<li>Ordered dimensions for traceability</li>
+<li>Client-side dynamic sampling</li>
+<li>An exploratory visual interface that lets you slice and dice and combine dimensions</li>
+<li>In close to real-time</li>
+</ol>
+<p>She then goes on to explain the reasoning behind her choices, all of which I fully agree with. I highly recommend giving the article a thorough read.</p>
+<h2 id="trying-out-an-existing-observability-tool---honeycomb">
+  Trying out an existing Observability tool - HoneyComb
+  <a class="heading-link" href="#trying-out-an-existing-observability-tool---honeycomb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>In the same article that I have mentioned just now, Charity mentions how <a href="https://www.honeycomb.io/"  class="external-link" target="_blank" rel="noopener">HoneyComb</a> was built to deliver on these promises. Hence I decided to give it a try by checking out their live play scenarios.</p>
+<p>In the <a href="https://play.honeycomb.io/tracing"  class="external-link" target="_blank" rel="noopener">Play with Tracing and BubbleUp</a> scenario I followed the step by step guide to identify some outlier requests which were taking longer than the rest. By the end of the demo I was able to nail the problem down to the individual user who was experiencing the slower response times. I could definitely see how this technique could help me to debug performance issues in production which are affecting a portion of the users but are not visible in my pre-defined metrics dashboard.</p>
+<p>Next I tried out the <a href="https://play.honeycomb.io/events"  class="external-link" target="_blank" rel="noopener">Play with Events</a> scenario which contains data about an actual production incident that HoneyComb <a href="https://www.honeycomb.io/blog/rds-performance-degradation-postmortem/"  class="external-link" target="_blank" rel="noopener">faced back in 2018</a>. Using the step by step guide as before I was able to identify the failed database that was the root of the issue.</p>
+<p>I noticed the following aspects of the tool -</p>
+<ol>
+<li>High-cardinality data: In the first scenario I was able to link the response time with an individual user, and then link the slower response time with the individual query that was being executed. Without high-cardinality this would have been impossible. In the absence of high cardinality data I could at best try to guess the issue and add sporadic log statements here and there, but I would still have to rely on luck to give me a break. Debugging should not be tied to luck.</li>
+<li>Metrics are also tied to requests/traces: All response times were tied with each individual trace, thus making it easy to identify requests which were slow.</li>
+<li>Wide events: The trace events contained a lot of data, including even the database query that was executed by the affected user! Without this query it would have been difficult to nail it down to the database performance problem.</li>
+<li>Dynamic dashboards: all the dashboards that are being generated are fully dynamic, and it&rsquo;s possible to create dashboards per dimension!</li>
+</ol>
+<p>At this point I was curious to know the strategy HoneyComb uses to decide which requests to sample. I searched in the doc and found <a href="https://docs.honeycomb.io/working-with-your-data/best-practices/sampling/#static-map-of-sample-rates"  class="external-link" target="_blank" rel="noopener">the section about Dynamic Sampling</a>, where it&rsquo;s mentioned how it&rsquo;s possible to make the sampling decision based on whether an HTTP request encounters an error -</p>
+<blockquote>
+<p><em>For example: when recording HTTP events, we may care about seeing every server error but need less resolution when looking at successful requests. We can then set the sample rate for successful requests to 100 (storing one in a hundred successful events). We include the sample rate along with each event—100 for successful events and 1 for error events.</em></p>
+</blockquote>
+<p>Hence with HoneyComb it is possible to delay the sampling decision once the request has been fully executed. This strategy is very handy and can be used to sample aggressively for failed/problematic requests and thus making it easy to debug them, while at the same time performing a relaxed sampling for the successful requests and thus helping us to keep the data volume low.</p>
+<p>One other thing that I noticed - in order to identify which requests are slow, we first need to define what a slow request looks like. For some applications it may be perfectly acceptable if a request completes within 4 seconds, while for some other type of applications it might be too slow. Since <a href="https://landing.google.com/sre/sre-book/chapters/service-level-objectives/"  class="external-link" target="_blank" rel="noopener">SLI/SLO/SLAs are gaining more and more popularity</a> in our industry, it would make sense to use SLOs to define these criteria, and then create sampling strategies based on this definition. If a request fails our SLO, we can always decide to sample and store the request so that we can later debug why it failed. If it is successful, we can adopt a more relaxed sampling rate.</p>
+<p>All in all, HoneyComb has left quite a good impression on me. Indeed it&rsquo;s an excellent tool!</p>
+<h2 id="are-metric-based-monitoring-tools-going-to-be-obsolete">
+  Are Metric-based monitoring tools going to be obsolete?
+  <a class="heading-link" href="#are-metric-based-monitoring-tools-going-to-be-obsolete">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>I don&rsquo;t think so. Metrics-based monitoring tools are still the best choice when we want to answer any pre-defined questions about our system (also called known-unknowns) -</p>
+<ol>
+<li>How many application instances are live at the moment?</li>
+<li>What is the amount of memory being consumed by the applications?</li>
+<li>What is the CPU usage etc.</li>
+</ol>
+<p>Observability tools, on the other hand, are best at answering the unknown-unknowns, things like -</p>
+<ol>
+<li>Why does this user sees a response time of 4 seconds?</li>
+<li>Why are the database queries hitting the database instances in region X take more than 5 seconds to complete etc.</li>
+</ol>
+<p>Any ideal observable system would combine them both.</p>
+<h2 id="conclusion">
+  Conclusion
+  <a class="heading-link" href="#conclusion">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>I am still at the very early stage of my observability journey, and still learning the concepts and the tools used in this field. However, I am already convinced that in a distributed system architecture observability practices are invaluable and can help us improve the quality and the reliability of our applications by a great deal. I intend to apply these practices in my day to day work and as I learn more I will definitely try to share my learnings in my blog (given time permits)!</p>
+<h2 id="acknowledgements">
+  Acknowledgements
+  <a class="heading-link" href="#acknowledgements">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>These are the resources which helped me learned about what observability truly is and how to build an observable system -</p>
+<ol>
+<li><a href="https://twitter.com/mipsytipsy/status/1305398051842871297"  class="external-link" target="_blank" rel="noopener">Definition of Observability by Charity Majors</a></li>
+<li><a href="https://thenewstack.io/observability-a-3-year-retrospective/"  class="external-link" target="_blank" rel="noopener">Observability — A 3-Year Retrospective - Charity Majors</a></li>
+<li><a href="https://lightstep.com/blog/three-pillars-zero-answers-towards-new-scorecard-observability/"  class="external-link" target="_blank" rel="noopener">Three Pillars with Zero Answers - Towards a New Scorecard for Observability - Ben Sigelman</a></li>
+<li><a href="https://www.honeycomb.io/blog/so-you-want-to-build-an-observability-tool/"  class="external-link" target="_blank" rel="noopener">So You Want To Build An Observability Tool… - Charity Majors</a></li>
+<li><a href="https://learning.oreilly.com/library/view/distributed-systems-observability/9781492033431/"  class="external-link" target="_blank" rel="noopener">Distributed Systems Observability - Cindy Sridharan</a></li>
+<li><a href="https://copyconstruct.medium.com/distributed-tracing-weve-been-doing-it-wrong-39fc92a857df"  class="external-link" target="_blank" rel="noopener">Distributed Tracing — we’ve been doing it wrong - Cindy Sridharan</a></li>
+</ol>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        <div id="disqus_thread"></div>
+<script>
+  window.disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "yourdiscussshortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+    
+    document.addEventListener('themeChanged', function (e) { 
+        if (document.readyState == 'complete') {
+          DISQUS.reset({ reload: true, config: disqus_config });
+        }
+    });
+</script>
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+      2017 -
+    
+    2025
+     MD Sayem Ahmed 
+    ·
+    
+    Powered by <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>
